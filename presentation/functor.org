@@ -1,16 +1,16 @@
 #+OPTIONS: toc:nil
 #+REVEAL_HLEVEL: 2
-* Functor
+*  Functor
 ** Type class review.
 
- Type class as a parameterised trait
+   Type class as a parameterised trait
    #+begin_src scala
      trait JsonWriter[A] {
        def write(value: A): Json
      }
    #+end_src
 
-#+REVEAL: split:t
+   #+REVEAL: split:t
    Instance of the type class
    #+begin_src scala
      object JsonWriterInstances {
@@ -23,7 +23,7 @@
    #+end_src
 
 
-#+REVEAL: split:t
+   #+REVEAL: split:t
 
    Interface object
    #+begin_src scala
@@ -34,48 +34,48 @@
      }
 
    #+end_src
-   
-Usage
-#+begin_src scala 
-   Json.toJson("foo bar")
-#+end_src
 
-#+REVEAL: split:t
+   Usage
+   #+begin_src scala
+     Json.toJson("foo bar")
+   #+end_src
 
-  Interface syntax
+   #+REVEAL: split:t
+
+   Interface syntax
    #+begin_src scala
      implicit class JsonWriterOps[A](value: A) {
        def toJson(implicit w: JsonWriter[A]): Json =
          w.write(value)
      }
    #+end_src
-   
-Usage
-#+begin_src scala
-  "foo bar".toJson
-  1.toJson
-  Person("John", "Smith").toJson
-#+end_src
 
-
-** Monoid review 
-   
+   Usage
    #+begin_src scala
-   
-trait Monoid[A] {
-  def combine(x: A, y: A): A
-  def empty: A
-}
+     "foo bar".toJson
+     1.toJson
+     Person("John", "Smith").toJson
    #+end_src
 
-#+REVEAL: split:t
+
+** Monoid review
+
+   #+begin_src scala
+
+     trait Monoid[A] {
+       def combine(x: A, y: A): A
+       def empty: A
+     }
+   #+end_src
+
+   #+REVEAL: split:t
    #+begin_src scala
      object MonoidLaws {
 
        // (1 + 2) + 3 == 1 + (2 + 3)
        def associativeLaw[A](x: A, y: A, z: A)(implicit m: Monoid[A]): Boolean = {
          m.combine(x, m.combine(y, z)) ==
-           m.combine(m.combine(x, y), z)
+         m.combine(m.combine(x, y), z)
        }
 
        // 2 + 0 == 0 + 2 == 2
@@ -88,14 +88,34 @@ trait Monoid[A] {
    #+end_src
 
 
-** Type constructors 
+**   Functor
+*** Informal definition
+    #+ATTR_REVEAL: :frag roll-in
+    Functor is anything with a map method.
 
-   #+begin_src
- scala> import scala.concurrent.Future
- import scala.concurrent.Future
+    #+ATTR_REVEAL: :frag roll-in
+    #+begin_src scala
+      trait Functor[F[_]] {
+        def map[A, B](fa: F[A])(f: A => B): F[B]
+      }
+    #+end_src
 
- scala> :k Future
- scala.concurrent.Future's kind is F[+A]
+    #+ATTR_REVEAL: :frag roll-in
+    /Compare type paremeter to Monoid type class./
+    #+ATTR_REVEAL: :frag roll-in
+    #+begin_src scala
+      trait Monoid[A] {
+        def combine(x: A, y: A): A
+        def empty: A
+      }
+
+    #+end_src
+
+*** Type constructors
+
+    #+begin_src
+ scala> :k Int
+ Int's kind is A
 
  scala> :k List
  List's kind is F[+A]
@@ -105,15 +125,16 @@ trait Monoid[A] {
 
  scala> :k Either
  Either's kind is F[+A1,+A2]
-   #+end_src
 
-**   Functor
-*** Definition from the scala-with-cats book
-Informally, a functor is anything with a map method. You probably know lots
-*** asdfadfasf
-   #+begin_src scala
+ scala> :k Future
+ scala.concurrent.Future's kind is F[+A]
+    #+end_src
 
-     trait Functor[F[_]] {
-       def map[A, B](fa: F[A])(f: A => B): F[B]
-     }
-   #+end_src
+*** Examples of Functors
+    #+begin_src
+
+scala> List(1,2,4).map(n => n + 10)
+val res1: List[Int] = List(11, 12, 14)
+
+scala>
+    #+end_src

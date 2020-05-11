@@ -25,18 +25,18 @@
 <body>
 <div class="reveal">
 <div class="slides">
-<section id="sec-title-slide"><p class="date">Created: 2020-05-10 Sun 12:35</p>
+<section id="sec-title-slide"><p class="date">Created: 2020-05-11 Mon 06:40</p>
 </section>
 <section>
-<section id="slide-org67a7964">
-<h2 id="org67a7964"><span class="section-number-2">1</span> Functor</h2>
+<section id="slide-org104c33b">
+<h2 id="org104c33b"><span class="section-number-2">1</span> Functor</h2>
 <div class="outline-text-2" id="text-1">
 </div>
 </section>
 </section>
 <section>
-<section id="slide-org9ecb154">
-<h3 id="org9ecb154"><span class="section-number-3">1.1</span> Type class review.</h3>
+<section id="slide-org81d0212">
+<h3 id="org81d0212"><span class="section-number-3">1.1</span> Type class review.</h3>
 <p>
 Type class as a parameterised trait
 </p>
@@ -49,7 +49,7 @@ Type class as a parameterised trait
 </div>
 
 </section>
-<section id="slide-org9ecb154-split">
+<section id="slide-org81d0212-split">
 
 <h3><span class="section-number-3">1.1</span> Type class review.</h3>
 <p>
@@ -69,7 +69,7 @@ Instance of the type class
 
 
 </section>
-<section id="slide-org9ecb154-split">
+<section id="slide-org81d0212-split">
 
 <h3><span class="section-number-3">1.1</span> Type class review.</h3>
 
@@ -97,7 +97,7 @@ Usage
 </div>
 
 </section>
-<section id="slide-org9ecb154-split">
+<section id="slide-org81d0212-split">
 
 <h3><span class="section-number-3">1.1</span> Type class review.</h3>
 
@@ -128,8 +128,8 @@ Usage
 </section>
 </section>
 <section>
-<section id="slide-org179bb77">
-<h3 id="org179bb77"><span class="section-number-3">1.2</span> Monoid review</h3>
+<section id="slide-orgeb2eb48">
+<h3 id="orgeb2eb48"><span class="section-number-3">1.2</span> Monoid review</h3>
 <div class="org-src-container">
 
 <pre  class="src src-scala"><code trim>
@@ -141,7 +141,7 @@ Usage
 </div>
 
 </section>
-<section id="slide-org179bb77-split">
+<section id="slide-orgeb2eb48-split">
 
 <h3><span class="section-number-3">1.2</span> Monoid review</h3>
 <div class="org-src-container">
@@ -151,7 +151,7 @@ Usage
   <span style="color: #5F7F5F;">// </span><span style="color: #7F9F7F;">(1 + 2) + 3 == 1 + (2 + 3)</span>
   <span style="color: #F0DFAF; font-weight: bold;">def</span> <span style="color: #93E0E3;">associativeLaw</span>[<span style="color: #BFEBBF;">A</span>](x<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">A</span>, y<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">A</span>, z<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">A</span>)(<span style="color: #DCDCCC; font-weight: bold;">implicit</span> m<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Monoid</span>[<span style="color: #BFEBBF;">A</span>])<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Boolean</span> <span style="color: #F0DFAF; font-weight: bold;">=</span> {
     m.combine(x, m.combine(y, z)) ==
-      m.combine(m.combine(x, y), z)
+    m.combine(m.combine(x, y), z)
   }
 
   <span style="color: #5F7F5F;">// </span><span style="color: #7F9F7F;">2 + 0 == 0 + 2 == 2</span>
@@ -168,14 +168,44 @@ Usage
 </section>
 </section>
 <section>
-<section id="slide-orgd412bb1">
-<h3 id="orgd412bb1"><span class="section-number-3">1.3</span> Type constructors</h3>
-<pre  class="example">
-scala&gt; import scala.concurrent.Future
-import scala.concurrent.Future
+<section id="slide-org15801fd">
+<h3 id="org15801fd"><span class="section-number-3">1.3</span> Functor</h3>
+<div class="outline-text-3" id="text-1-3">
+</div>
+</section>
+<section id="slide-org85d6272">
+<h4 id="org85d6272"><span class="section-number-4">1.3.1</span> Informal definition</h4>
+<p class="fragment roll-in">
+Functor is anything with a map method.
+</p>
 
-scala&gt; :k Future
-scala.concurrent.Future's kind is F[+A]
+<div class="org-src-container">
+
+<pre  class="fragment roll-in"><code trim><span style="color: #F0DFAF; font-weight: bold;">trait</span> <span style="color: #7CB8BB;">Functor</span>[<span style="color: #BFEBBF;">F</span>[<span style="color: #F0DFAF; font-weight: bold;">_</span>]] {
+  <span style="color: #F0DFAF; font-weight: bold;">def</span> <span style="color: #93E0E3;">map</span>[<span style="color: #BFEBBF;">A</span>, <span style="color: #BFEBBF;">B</span>](fa<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">F</span>[<span style="color: #BFEBBF;">A</span>])(f<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">A</span> <span style="color: #F0DFAF; font-weight: bold;">=&gt;</span> <span style="color: #BFEBBF;">B</span>)<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">F</span>[<span style="color: #BFEBBF;">B</span>]
+}
+</code></pre>
+</div>
+
+<p class="fragment roll-in">
+<i>Compare type paremeter to Monoid type class.</i>
+</p>
+<div class="org-src-container">
+
+<pre  class="fragment roll-in"><code trim><span style="color: #F0DFAF; font-weight: bold;">trait</span> <span style="color: #7CB8BB;">Monoid</span>[<span style="color: #BFEBBF;">A</span>] {
+  <span style="color: #F0DFAF; font-weight: bold;">def</span> <span style="color: #93E0E3;">combine</span>(x<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">A</span>, y<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">A</span>)<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">A</span>
+  <span style="color: #F0DFAF; font-weight: bold;">def</span> <span style="color: #93E0E3;">empty</span><span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">A</span>
+}
+
+</code></pre>
+</div>
+
+</section>
+<section id="slide-org0dfebaa">
+<h4 id="org0dfebaa"><span class="section-number-4">1.3.2</span> Type constructors</h4>
+<pre  class="example">
+scala&gt; :k Int
+Int's kind is A
 
 scala&gt; :k List
 List's kind is F[+A]
@@ -185,32 +215,21 @@ Option's kind is F[+A]
 
 scala&gt; :k Either
 Either's kind is F[+A1,+A2]
+
+scala&gt; :k Future
+scala.concurrent.Future's kind is F[+A]
 </pre>
 
 </section>
-</section>
-<section>
-<section id="slide-orgb2f4cb9">
-<h3 id="orgb2f4cb9"><span class="section-number-3">1.4</span> Functor</h3>
-<div class="outline-text-3" id="text-1-4">
-</div>
-</section>
-<section id="slide-org765b26a">
-<h4 id="org765b26a"><span class="section-number-4">1.4.1</span> Definition from the scala-with-cats book</h4>
-<p>
-Informally, a functor is anything with a map method. You probably know lots
-</p>
-</section>
-<section id="slide-org0efc868">
-<h4 id="org0efc868"><span class="section-number-4">1.4.2</span> asdfadfasf</h4>
-<div class="org-src-container">
+<section id="slide-org2ed43da">
+<h4 id="org2ed43da"><span class="section-number-4">1.3.3</span> Examples of Functors</h4>
+<pre  class="example">
 
-<pre  class="src src-scala"><code trim>
-<span style="color: #F0DFAF; font-weight: bold;">trait</span> <span style="color: #7CB8BB;">Functor</span>[<span style="color: #BFEBBF;">F</span>[<span style="color: #F0DFAF; font-weight: bold;">_</span>]] {
-  <span style="color: #F0DFAF; font-weight: bold;">def</span> <span style="color: #93E0E3;">map</span>[<span style="color: #BFEBBF;">A</span>, <span style="color: #BFEBBF;">B</span>](fa<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">F</span>[<span style="color: #BFEBBF;">A</span>])(f<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">A</span> <span style="color: #F0DFAF; font-weight: bold;">=&gt;</span> <span style="color: #BFEBBF;">B</span>)<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">F</span>[<span style="color: #BFEBBF;">B</span>]
-}
-</code></pre>
-</div>
+scala&gt; List(1,2,4).map(n =&gt; n + 10)
+val res1: List[Int] = List(11, 12, 14)
+
+scala&gt;
+</pre>
 </section>
 </section>
 </div>
