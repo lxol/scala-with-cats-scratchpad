@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<title></title>
+<title>Scala with Cats.</title>
 <style type="text/css">
 .underline { text-decoration: underline; }
 </style>
@@ -25,18 +25,17 @@
 <body>
 <div class="reveal">
 <div class="slides">
-<section id="sec-title-slide"><p class="date">Created: 2020-05-11 Mon 06:40</p>
+<section id="sec-title-slide"><h1 class="title">Scala with Cats.</h1><p class="date">Created: 2020-05-12 Tue 06:55</p>
 </section>
+
 <section>
-<section id="slide-org104c33b">
-<h2 id="org104c33b"><span class="section-number-2">1</span> Functor</h2>
-<div class="outline-text-2" id="text-1">
+<section id="slide-org52d153a">
+<h2 id="org52d153a">Chapter 3 Functors</h2>
+<div class="outline-text-2" id="text-org52d153a">
 </div>
 </section>
-</section>
-<section>
-<section id="slide-org81d0212">
-<h3 id="org81d0212"><span class="section-number-3">1.1</span> Type class review.</h3>
+<section id="slide-org9152221">
+<h3 id="org9152221">Type class review.</h3>
 <p>
 Type class as a parameterised trait
 </p>
@@ -49,9 +48,9 @@ Type class as a parameterised trait
 </div>
 
 </section>
-<section id="slide-org81d0212-split">
+<section id="slide-org9152221-split">
 
-<h3><span class="section-number-3">1.1</span> Type class review.</h3>
+<h3>Type class review.</h3>
 <p>
 Instance of the type class
 </p>
@@ -69,9 +68,9 @@ Instance of the type class
 
 
 </section>
-<section id="slide-org81d0212-split">
+<section id="slide-org9152221-split">
 
-<h3><span class="section-number-3">1.1</span> Type class review.</h3>
+<h3>Type class review.</h3>
 
 <p>
 Interface object
@@ -87,19 +86,19 @@ Interface object
 </code></pre>
 </div>
 
-<p>
+<p class="fragment roll-in">
 Usage
 </p>
 <div class="org-src-container">
 
-<pre  class="src src-scala"><code trim><span style="color: #BFEBBF;">Json</span>.toJson(<span style="color: #CC9393;">"foo bar"</span>)
+<pre  class="fragment roll-in"><code trim><span style="color: #BFEBBF;">Json</span>.toJson(<span style="color: #CC9393;">"foo bar"</span>)
 </code></pre>
 </div>
 
 </section>
-<section id="slide-org81d0212-split">
+<section id="slide-org9152221-split">
 
-<h3><span class="section-number-3">1.1</span> Type class review.</h3>
+<h3>Type class review.</h3>
 
 <p>
 Interface syntax
@@ -113,12 +112,12 @@ Interface syntax
 </code></pre>
 </div>
 
-<p>
+<p class="fragment roll-in">
 Usage
 </p>
 <div class="org-src-container">
 
-<pre  class="src src-scala"><code trim><span style="color: #CC9393;">"foo bar"</span>.toJson
+<pre  class="fragment roll-in"><code trim><span style="color: #CC9393;">"foo bar"</span>.toJson
 <span style="color: #BFEBBF;">1.</span>toJson
 <span style="color: #BFEBBF;">Person</span>(<span style="color: #CC9393;">"John"</span>, <span style="color: #CC9393;">"Smith"</span>).toJson
 </code></pre>
@@ -126,10 +125,8 @@ Usage
 
 
 </section>
-</section>
-<section>
-<section id="slide-orgeb2eb48">
-<h3 id="orgeb2eb48"><span class="section-number-3">1.2</span> Monoid review</h3>
+<section id="slide-org562b9d4">
+<h3 id="org562b9d4">Monoid review</h3>
 <div class="org-src-container">
 
 <pre  class="src src-scala"><code trim>
@@ -141,9 +138,9 @@ Usage
 </div>
 
 </section>
-<section id="slide-orgeb2eb48-split">
+<section id="slide-org562b9d4-split">
 
-<h3><span class="section-number-3">1.2</span> Monoid review</h3>
+<h3>Monoid review</h3>
 <div class="org-src-container">
 
 <pre  class="src src-scala"><code trim><span style="color: #F0DFAF; font-weight: bold;">object</span> <span style="color: #BFEBBF;">MonoidLaws</span> {
@@ -166,22 +163,111 @@ Usage
 
 
 </section>
-</section>
-<section>
-<section id="slide-org15801fd">
-<h3 id="org15801fd"><span class="section-number-3">1.3</span> Functor</h3>
-<div class="outline-text-3" id="text-1-3">
-</div>
-</section>
-<section id="slide-org85d6272">
-<h4 id="org85d6272"><span class="section-number-4">1.3.1</span> Informal definition</h4>
+<section id="slide-orgcda436e">
+<h3 id="orgcda436e">3.1 Examples of Functors</h3>
 <p class="fragment roll-in">
 Functor is anything with a map method.
 </p>
 
+<pre  class="fragment roll-in">
+scala&gt; List(1,2,4).map(n =&gt; n + 10)
+val res1: List[Int] = List(11, 12, 14)
+
+
+</pre>
+
+<pre  class="fragment roll-in">
+scala&gt; Option(1).map(n =&gt; n + 10)
+val res66: Option[Int] = Some(11)
+</pre>
+
+
+</section>
+<section id="slide-orgcda436e-split">
+
+<h3>3.1 Examples of Functors</h3>
+<p>
+   Because map leaves the structure of the context unchanged, we can
+call it repeatedly to sequence multiple computations on the contents
+of an inial data structure.
+</p>
+
+<pre class="example" class="fragment roll-in">
+scala&gt; List(1,2,3).
+     | map( n =&gt; n + 1).
+     | map( n =&gt; n * 10).
+     | map( n =&gt; s"${n}!")
+val res74: List[String] = List(20!, 30!, 40!)
+</pre>
+
+</section>
+<section id="slide-orgcda436e-split">
+
+<h3>3.1 Examples of Functors</h3>
+<p>
+Option map
+</p>
+<pre  class="example">
+scala&gt; Option(1).
+     | map( n =&gt; n + 1).
+     | map( n =&gt; n * 10).
+     | map( n =&gt; s"${n}!")
+val res76: Option[String] = Some(20!)
+</pre>
+
+</section>
+<section id="slide-orgcda436e-split">
+
+<h3>3.1 Examples of Functors</h3>
+<p>
+Either map
+</p>
+<pre  class="example">
+scala&gt; Right(1).
+     | map( n =&gt; n + 1).
+     | map( n =&gt; n * 10).
+     | map( n =&gt; s"${n}!")
+val res77: scala.util.Either[Nothing,String] = Right(20!)
+</pre>
+
+</section>
+<section id="slide-orgcda436e-split">
+
+<h3>3.1 Examples of Functors</h3>
+<p>
+Future map
+</p>
+<pre  class="example">
+
+scala&gt; Future(1).
+     | map( n =&gt; n + 1).
+     | map( n =&gt; n * 10).
+     | map( n =&gt; s"${n}!")
+val res85: scala.concurrent.Future[String] = Future(&lt;not completed&gt;)
+
+scala&gt; Await.result(res85, 1.second)
+val res87: String = 20!
+
+</pre>
+
+
+</section>
+<section id="slide-orgcda436e-split">
+
+<h3>3.1 Examples of Functors</h3>
+<p>
+Functions
+</p>
+<pre  class="example">
+
+</pre>
+
+</section>
+<section id="slide-orgbd9a8c7">
+<h3 id="orgbd9a8c7">Definition of Functor</h3>
 <div class="org-src-container">
 
-<pre  class="fragment roll-in"><code trim><span style="color: #F0DFAF; font-weight: bold;">trait</span> <span style="color: #7CB8BB;">Functor</span>[<span style="color: #BFEBBF;">F</span>[<span style="color: #F0DFAF; font-weight: bold;">_</span>]] {
+<pre  class="src src-scala"><code trim><span style="color: #F0DFAF; font-weight: bold;">trait</span> <span style="color: #7CB8BB;">Functor</span>[<span style="color: #BFEBBF;">F</span>[<span style="color: #F0DFAF; font-weight: bold;">_</span>]] {
   <span style="color: #F0DFAF; font-weight: bold;">def</span> <span style="color: #93E0E3;">map</span>[<span style="color: #BFEBBF;">A</span>, <span style="color: #BFEBBF;">B</span>](fa<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">F</span>[<span style="color: #BFEBBF;">A</span>])(f<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">A</span> <span style="color: #F0DFAF; font-weight: bold;">=&gt;</span> <span style="color: #BFEBBF;">B</span>)<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">F</span>[<span style="color: #BFEBBF;">B</span>]
 }
 </code></pre>
@@ -201,8 +287,8 @@ Functor is anything with a map method.
 </div>
 
 </section>
-<section id="slide-org0dfebaa">
-<h4 id="org0dfebaa"><span class="section-number-4">1.3.2</span> Type constructors</h4>
+<section id="slide-org9967722">
+<h3 id="org9967722">Type constructors</h3>
 <pre  class="example">
 scala&gt; :k Int
 Int's kind is A
@@ -219,17 +305,6 @@ Either's kind is F[+A1,+A2]
 scala&gt; :k Future
 scala.concurrent.Future's kind is F[+A]
 </pre>
-
-</section>
-<section id="slide-org2ed43da">
-<h4 id="org2ed43da"><span class="section-number-4">1.3.3</span> Examples of Functors</h4>
-<pre  class="example">
-
-scala&gt; List(1,2,4).map(n =&gt; n + 10)
-val res1: List[Int] = List(11, 12, 14)
-
-scala&gt;
-</pre>
 </section>
 </section>
 </div>
@@ -240,6 +315,7 @@ scala&gt;
 // Full list of configuration options available here:
 // https://github.com/hakimel/reveal.js#configuration
 Reveal.initialize({
+slideNumber:"c/t",
 multiplex: {
     secret: '', // null if client
     id: '', // id, obtained from socket.io server

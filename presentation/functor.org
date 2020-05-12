@@ -1,6 +1,12 @@
-#+OPTIONS: toc:nil
-#+REVEAL_HLEVEL: 2
-*  Functor
+#+OPTIONS: num:nil toc:nil
+#+REVEAL_HLEVEL: 1
+# #+REVEAL_TRANS: None/Fade/Slide/Convex/Concave/Zoom
+#+REVEAL_TRANS: None
+
+#+REVEAL_INIT_OPTIONS: slideNumber:"c/t"
+#+Title: Scala with Cats. 
+
+* Chapter 3 Functors 
 ** Type class review.
 
    Type class as a parameterised trait
@@ -35,7 +41,9 @@
 
    #+end_src
 
+   #+ATTR_REVEAL: :frag roll-in
    Usage
+   #+ATTR_REVEAL: :frag roll-in
    #+begin_src scala
      Json.toJson("foo bar")
    #+end_src
@@ -50,7 +58,9 @@
      }
    #+end_src
 
+   #+ATTR_REVEAL: :frag roll-in
    Usage
+   #+ATTR_REVEAL: :frag roll-in
    #+begin_src scala
      "foo bar".toJson
      1.toJson
@@ -87,13 +97,78 @@
 
    #+end_src
 
-
-**   Functor
-*** Informal definition
+   
+** 3.1 Examples of Functors
     #+ATTR_REVEAL: :frag roll-in
     Functor is anything with a map method.
 
     #+ATTR_REVEAL: :frag roll-in
+    #+begin_src
+scala> List(1,2,4).map(n => n + 10)
+val res1: List[Int] = List(11, 12, 14)
+
+
+    #+end_src
+
+    #+ATTR_REVEAL: :frag roll-in
+#+begin_src 
+scala> Option(1).map(n => n + 10)
+val res66: Option[Int] = Some(11)
+#+end_src
+
+
+   #+REVEAL: split:t
+   Because map leaves the structure of the context unchanged, we can
+call it repeatedly to sequence multiple computations on the contents
+of an inial data structure.
+
+    #+ATTR_REVEAL: :frag roll-in
+    #+begin_example
+scala> List(1,2,3).
+     | map( n => n + 1).
+     | map( n => n * 10).
+     | map( n => s"${n}!")
+val res74: List[String] = List(20!, 30!, 40!)
+    #+end_example
+    
+   #+REVEAL: split:t
+    Option map
+    #+begin_src 
+scala> Option(1).
+     | map( n => n + 1).
+     | map( n => n * 10).
+     | map( n => s"${n}!")
+val res76: Option[String] = Some(20!)
+    #+end_src
+
+   #+REVEAL: split:t
+   Either map
+#+begin_src 
+scala> Right(1).
+     | map( n => n + 1).
+     | map( n => n * 10).
+     | map( n => s"${n}!")
+val res77: scala.util.Either[Nothing,String] = Right(20!)
+#+end_src
+
+** 3.2 More Examples of Functors
+
+   Future map
+#+begin_src 
+
+scala> Future(1).
+     | map( n => n + 1).
+     | map( n => n * 10).
+     | map( n => s"${n}!")
+val res85: scala.concurrent.Future[String] = Future(<not completed>)
+
+scala> Await.result(res85, 1.second)
+val res87: String = 20!
+
+#+end_src
+
+
+** Definition of Functor
     #+begin_src scala
       trait Functor[F[_]] {
         def map[A, B](fa: F[A])(f: A => B): F[B]
@@ -111,7 +186,7 @@
 
     #+end_src
 
-*** Type constructors
+** Type constructors
 
     #+begin_src
  scala> :k Int
@@ -130,11 +205,4 @@
  scala.concurrent.Future's kind is F[+A]
     #+end_src
 
-*** Examples of Functors
-    #+begin_src
 
-scala> List(1,2,4).map(n => n + 10)
-val res1: List[Int] = List(11, 12, 14)
-
-scala>
-    #+end_src
