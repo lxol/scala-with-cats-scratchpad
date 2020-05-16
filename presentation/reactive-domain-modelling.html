@@ -25,12 +25,12 @@
 <body>
 <div class="reveal">
 <div class="slides">
-<section id="sec-title-slide"><h1 class="title">Functional and Reactive Domain Modelling</h1><p class="date">Created: 2020-05-16 Sat 08:36</p>
+<section id="sec-title-slide"><h1 class="title">Functional and Reactive Domain Modelling</h1><p class="date">Created: 2020-05-16 Sat 09:23</p>
 </section>
 
 <section>
-<section id="slide-org47a7536">
-<h2 id="org47a7536">Chapter 10.</h2>
+<section id="slide-orgfe7adf9">
+<h2 id="orgfe7adf9">Chapter 10.</h2>
 <p>
 Techniques for building domain models
 </p>
@@ -40,8 +40,8 @@ Techniques for building domain models
 
 </ul>
 </section>
-<section id="slide-org0d46226">
-<h3 id="org0d46226">Remember about problem domain</h3>
+<section id="slide-org1c8a04b">
+<h3 id="org1c8a04b">Remember about problem domain</h3>
 <ul>
 <li>model elements</li>
 <li>domain vocabulary</li>
@@ -50,13 +50,13 @@ Techniques for building domain models
 </ul>
 
 </section>
-<section id="slide-orgfc60f2d">
-<h3 id="orgfc60f2d">10.2 Core principles for functional domain modelling</h3>
-<div class="outline-text-3" id="text-orgfc60f2d">
+<section id="slide-org3246700">
+<h3 id="org3246700">10.2 Core principles for functional domain modelling</h3>
+<div class="outline-text-3" id="text-org3246700">
 </div>
 </section>
-<section id="slide-orgb6bb899">
-<h4 id="orgb6bb899">Think in expressions</h4>
+<section id="slide-orgd959abd">
+<h4 id="orgd959abd">Think in expressions</h4>
 <ul>
 <li>An <i>expression</i> is something that has a value.</li>
 
@@ -66,7 +66,7 @@ Techniques for building domain models
 
 
 </section>
-<section id="slide-orgb6bb899-split">
+<section id="slide-orgd959abd-split">
 
 <h4>Think in expressions</h4>
 
@@ -89,7 +89,7 @@ Each clause in <code>for</code> expression is a smaller expression.
 </p>
 
 </section>
-<section id="slide-orgb6bb899-split">
+<section id="slide-orgd959abd-split">
 
 <h4>Think in expressions</h4>
 
@@ -97,6 +97,110 @@ Each clause in <code>for</code> expression is a smaller expression.
 <li>don't commit to the side effect early</li>
 <li>use combinators to abstract the effect</li>
 <li>combinators don't break the chain of expressions</li>
+
+</ul>
+
+
+</section>
+<section id="slide-orgeca58ba">
+<h4 id="orgeca58ba">Abstract early evaluate late</h4>
+<p>
+Differentiate between 
+</p>
+<ul>
+<li>computations</li>
+<li>values</li>
+
+</ul>
+
+
+</section>
+<section id="slide-orgeca58ba-split">
+
+<h4>Abstract early evaluate late</h4>
+
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim><span style="color: #F0DFAF; font-weight: bold;">def</span> <span style="color: #93E0E3;">foo1</span>(...)<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Account</span> <span style="color: #F0DFAF; font-weight: bold;">=</span> ...
+<span style="color: #5F7F5F;">// </span><span style="color: #7F9F7F;">vs </span>
+<span style="color: #F0DFAF; font-weight: bold;">def</span> <span style="color: #93E0E3;">foo2</span>(...)<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Option</span>[<span style="color: #BFEBBF;">Account</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> ...
+</code></pre>
+</div>
+
+<ul>
+<li>foo1 returns a value</li>
+<li><p>
+foo2 returns a computation
+</p></li>
+
+</ul>
+<p>
+Don't comit to values early on.
+</p>
+<p class="fragment roll-in">
+You'll loose the power to compose with other computations
+</p>
+
+
+</section>
+<section id="slide-org8e6b3ce">
+<h4 id="org8e6b3ce">Use the least powerful abstraction that fits</h4>
+<ul class="fragment roll-in">
+<li>the more powerful abstraction is, the more specialized it is</li>
+<li>consider monadic vs applicative effects</li>
+
+</ul>
+
+</section>
+<section id="slide-org93acf12">
+<h4 id="org93acf12">Publish what to do, hide how to do within combinators</h4>
+<p>
+Consider an example: 
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim><span style="color: #F0DFAF; font-weight: bold;">def</span> <span style="color: #93E0E3;">tradeGeneration</span>(
+   marke<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Market</span>,
+   broker<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Account</span>,
+   clientAccounts<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">List</span>[<span style="color: #BFEBBF;">Account</span>]) <span style="color: #F0DFAF; font-weight: bold;">=</span>
+      clientOrders andThen
+         execute(market, broker) andThen
+             allocate(clientAccounts)
+</code></pre>
+</div>
+
+<ul class="fragment roll-in">
+<li><p>
+the implementation shows what to do
+</p></li>
+<li>how to do is abstracted with 'andThen' combinator</li>
+
+</ul>
+
+
+</section>
+<section id="slide-org29d5eac">
+<h4 id="org29d5eac">Decouple algebra from the implementation</h4>
+<ul>
+<li>algebra is a client's contract (interface)</li>
+<li>algebra can have multiple implementations</li>
+
+</ul>
+
+
+</section>
+<section id="slide-org29d5eac-split">
+
+<h4>Decouple algebra from the implementation</h4>
+
+<p>
+Ways of achieving this goal: 
+</p>
+
+<ul class="fragment roll-in">
+<li>trait based composition</li>
+<li>The Type Class pattern</li>
+<li>Free monad and interpreter pattern</li>
 
 </ul>
 </section>

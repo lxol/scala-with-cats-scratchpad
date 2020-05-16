@@ -47,3 +47,72 @@
    - use combinators to abstract the effect
    - combinators don't break the chain of expressions 
 
+
+*** Abstract early evaluate late
+
+Differentiate between 
+ - computations 
+ - values
+
+
+   #+REVEAL: split:t
+   
+#+begin_src scala
+  def foo1(...): Account = ...
+  // vs 
+  def foo2(...): Option[Account] = ...
+#+end_src
+
+   - foo1 returns a value 
+   - foo2 returns a computation
+    #+ATTR_REVEAL: :frag roll-in
+Don't comit to values early on.
+    #+ATTR_REVEAL: :frag roll-in
+You'll loose the power to compose with other computations
+    
+
+*** Use the least powerful abstraction that fits
+
+#+ATTR_REVEAL: :frag roll-in
+  - the more powerful abstraction is, the more specialized it is
+  - consider monadic vs applicative effects 
+
+*** Publish what to do, hide how to do within combinators
+    
+Consider an example: 
+#+begin_src scala
+def tradeGeneration(
+   marke: Market,
+   broker: Account,
+   clientAccounts: List[Account]) =
+      clientOrders andThen
+         execute(market, broker) andThen
+             allocate(clientAccounts)
+#+end_src
+
+    #+ATTR_REVEAL: :frag roll-in
+- the implementation shows what to do
+    #+ATTR_REVEAL: :frag roll-in
+- how to do is abstracted with 'andThen' combinator
+
+
+*** Decouple algebra from the implementation
+    
+
+    #+ATTR_REVEAL: :frag roll-in
+
+    - algebra is a client's contract (interface)
+    - algebra can have multiple implementations
+      
+
+   #+REVEAL: split:t
+
+   Ways of achieving this goal: 
+
+    #+ATTR_REVEAL: :frag roll-in
+    - trait based composition
+    - The Type Class pattern
+    - Free monad and interpreter pattern
+
+*** Isolate bounded contexts
+*** Prefere futures to actors
