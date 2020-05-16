@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Functional and Reactive Domain Modelling</title>
+<style type="text/css">
+.underline { text-decoration: underline; }
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/css/reveal.css"/>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/css/theme/moon.css" id="theme"/>
+
+
+<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+<script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = 'https://cdn.jsdelivr.net/npm/reveal.js/css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+</script>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+<section id="sec-title-slide"><h1 class="title">Functional and Reactive Domain Modelling</h1><p class="date">Created: 2020-05-16 Sat 08:36</p>
+</section>
+
+<section>
+<section id="slide-org47a7536">
+<h2 id="org47a7536">Chapter 10.</h2>
+<p>
+Techniques for building domain models
+</p>
+<ul>
+<li>responsive</li>
+<li>easy to reason about</li>
+
+</ul>
+</section>
+<section id="slide-org0d46226">
+<h3 id="org0d46226">Remember about problem domain</h3>
+<ul>
+<li>model elements</li>
+<li>domain vocabulary</li>
+<li>boundaries of the subsystems</li>
+
+</ul>
+
+</section>
+<section id="slide-orgfc60f2d">
+<h3 id="orgfc60f2d">10.2 Core principles for functional domain modelling</h3>
+<div class="outline-text-3" id="text-orgfc60f2d">
+</div>
+</section>
+<section id="slide-orgb6bb899">
+<h4 id="orgb6bb899">Think in expressions</h4>
+<ul>
+<li>An <i>expression</i> is something that has a value.</li>
+
+<li>Functions generate bigger expressions from the smaller one.</li>
+
+</ul>
+
+
+</section>
+<section id="slide-orgb6bb899-split">
+
+<h4>Think in expressions</h4>
+
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim><span style="color: #F0DFAF; font-weight: bold;">def</span> <span style="color: #93E0E3;">op</span>(no<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Stirng</span>) <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #F0DFAF; font-weight: bold;">for</span> {
+   <span style="color: #F0DFAF; font-weight: bold;">_</span> <span style="color: #F0DFAF; font-weight: bold;">&lt;-</span> credit(no, <span style="color: #BFEBBF;">BigDecimal</span>(<span style="color: #BFEBBF;">100</span>))
+   <span style="color: #F0DFAF; font-weight: bold;">_</span> <span style="color: #F0DFAF; font-weight: bold;">&lt;-</span> credit(no, <span style="color: #BFEBBF;">BigDecimal</span>(<span style="color: #BFEBBF;">300</span>))
+   <span style="color: #F0DFAF; font-weight: bold;">_</span> <span style="color: #F0DFAF; font-weight: bold;">&lt;-</span> debit(no, <span style="color: #BFEBBF;">BigDecimal</span>(<span style="color: #BFEBBF;">100</span>))
+   b <span style="color: #F0DFAF; font-weight: bold;">&lt;-</span> balance(no)
+} <span style="color: #F0DFAF; font-weight: bold;">yield</span> b
+</code></pre>
+</div>
+
+<p class="fragment roll-in">
+Each clause in <code>for</code> expression is a smaller expression.
+</p>
+<p class="fragment roll-in">
+<code>flatMap</code> chained them to yield the final result
+</p>
+
+</section>
+<section id="slide-orgb6bb899-split">
+
+<h4>Think in expressions</h4>
+
+<ul>
+<li>don't commit to the side effect early</li>
+<li>use combinators to abstract the effect</li>
+<li>combinators don't break the chain of expressions</li>
+
+</ul>
+</section>
+</section>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js/js/reveal.js"></script>
+
+<script>
+// Full list of configuration options available here:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+slideNumber:"c/t",
+multiplex: {
+    secret: '', // null if client
+    id: '', // id, obtained from socket.io server
+    url: '' // Location of socket.io server
+},
+
+// Optional libraries used to extend on reveal.js
+dependencies: [
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }]
+});
+</script>
+</body>
+</html>

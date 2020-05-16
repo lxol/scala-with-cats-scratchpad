@@ -1,0 +1,49 @@
+#+OPTIONS: num:nil toc:nil
+#+REVEAL_HLEVEL: 1
+# #+REVEAL_TRANS: None/Fade/Slide/Convex/Concave/Zoom
+#+REVEAL_TRANS: None
+
+#+REVEAL_INIT_OPTIONS: slideNumber:"c/t"
+#+Title: Functional and Reactive Domain Modelling
+
+* Chapter 10.
+  Techniques for building domain models
+  - responsive
+  - easy to reason about
+** Remember about problem domain
+
+   - model elements
+   - domain vocabulary
+   - boundaries of the subsystems
+
+** 10.2 Core principles for functional domain modelling
+
+*** Think in expressions
+    
+   - An /expression/ is something that has a value.
+
+   - Functions generate bigger expressions from the smaller one.
+
+
+   #+REVEAL: split:t
+   
+#+begin_src scala
+  def op(no: Stirng) = for {
+     _ <- credit(no, BigDecimal(100))
+     _ <- credit(no, BigDecimal(300))
+     _ <- debit(no, BigDecimal(100))
+     b <- balance(no)
+  } yield b
+#+end_src
+
+    #+ATTR_REVEAL: :frag roll-in
+     Each clause in =for= expression is a smaller expression.
+    #+ATTR_REVEAL: :frag roll-in
+     =flatMap= chained them to yield the final result
+
+   #+REVEAL: split:t
+   
+   - don't commit to the side effect early
+   - use combinators to abstract the effect
+   - combinators don't break the chain of expressions 
+

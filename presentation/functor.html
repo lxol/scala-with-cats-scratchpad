@@ -25,17 +25,17 @@
 <body>
 <div class="reveal">
 <div class="slides">
-<section id="sec-title-slide"><h1 class="title">Scala with Cats.</h1><p class="date">Created: 2020-05-12 Tue 06:55</p>
+<section id="sec-title-slide"><h1 class="title">Scala with Cats.</h1><p class="date">Created: 2020-05-12 Tue 09:43</p>
 </section>
 
 <section>
-<section id="slide-org52d153a">
-<h2 id="org52d153a">Chapter 3 Functors</h2>
-<div class="outline-text-2" id="text-org52d153a">
+<section id="slide-orgddc846a">
+<h2 id="orgddc846a">Chapter 3 Functors</h2>
+<div class="outline-text-2" id="text-orgddc846a">
 </div>
 </section>
-<section id="slide-org9152221">
-<h3 id="org9152221">Type class review.</h3>
+<section id="slide-org13d7639">
+<h3 id="org13d7639">Type class review.</h3>
 <p>
 Type class as a parameterised trait
 </p>
@@ -48,7 +48,7 @@ Type class as a parameterised trait
 </div>
 
 </section>
-<section id="slide-org9152221-split">
+<section id="slide-org13d7639-split">
 
 <h3>Type class review.</h3>
 <p>
@@ -68,7 +68,7 @@ Instance of the type class
 
 
 </section>
-<section id="slide-org9152221-split">
+<section id="slide-org13d7639-split">
 
 <h3>Type class review.</h3>
 
@@ -96,7 +96,7 @@ Usage
 </div>
 
 </section>
-<section id="slide-org9152221-split">
+<section id="slide-org13d7639-split">
 
 <h3>Type class review.</h3>
 
@@ -125,8 +125,8 @@ Usage
 
 
 </section>
-<section id="slide-org562b9d4">
-<h3 id="org562b9d4">Monoid review</h3>
+<section id="slide-org5d26fdb">
+<h3 id="org5d26fdb">Monoid review</h3>
 <div class="org-src-container">
 
 <pre  class="src src-scala"><code trim>
@@ -138,7 +138,7 @@ Usage
 </div>
 
 </section>
-<section id="slide-org562b9d4-split">
+<section id="slide-org5d26fdb-split">
 
 <h3>Monoid review</h3>
 <div class="org-src-container">
@@ -163,8 +163,8 @@ Usage
 
 
 </section>
-<section id="slide-orgcda436e">
-<h3 id="orgcda436e">3.1 Examples of Functors</h3>
+<section id="slide-org51dba94">
+<h3 id="org51dba94">3.1 Examples of Functors</h3>
 <p class="fragment roll-in">
 Functor is anything with a map method.
 </p>
@@ -183,7 +183,7 @@ val res66: Option[Int] = Some(11)
 
 
 </section>
-<section id="slide-orgcda436e-split">
+<section id="slide-org51dba94-split">
 
 <h3>3.1 Examples of Functors</h3>
 <p>
@@ -201,7 +201,7 @@ val res74: List[String] = List(20!, 30!, 40!)
 </pre>
 
 </section>
-<section id="slide-orgcda436e-split">
+<section id="slide-org51dba94-split">
 
 <h3>3.1 Examples of Functors</h3>
 <p>
@@ -216,7 +216,7 @@ val res76: Option[String] = Some(20!)
 </pre>
 
 </section>
-<section id="slide-orgcda436e-split">
+<section id="slide-org51dba94-split">
 
 <h3>3.1 Examples of Functors</h3>
 <p>
@@ -231,9 +231,8 @@ val res77: scala.util.Either[Nothing,String] = Right(20!)
 </pre>
 
 </section>
-<section id="slide-orgcda436e-split">
-
-<h3>3.1 Examples of Functors</h3>
+<section id="slide-org22ae53a">
+<h3 id="org22ae53a">3.2 More Examples of Functors</h3>
 <p>
 Future map
 </p>
@@ -252,19 +251,8 @@ val res87: String = 20!
 
 
 </section>
-<section id="slide-orgcda436e-split">
-
-<h3>3.1 Examples of Functors</h3>
-<p>
-Functions
-</p>
-<pre  class="example">
-
-</pre>
-
-</section>
-<section id="slide-orgbd9a8c7">
-<h3 id="orgbd9a8c7">Definition of Functor</h3>
+<section id="slide-org594c8ef">
+<h3 id="org594c8ef">Definition of Functor</h3>
 <div class="org-src-container">
 
 <pre  class="src src-scala"><code trim><span style="color: #F0DFAF; font-weight: bold;">trait</span> <span style="color: #7CB8BB;">Functor</span>[<span style="color: #BFEBBF;">F</span>[<span style="color: #F0DFAF; font-weight: bold;">_</span>]] {
@@ -287,24 +275,88 @@ Functions
 </div>
 
 </section>
-<section id="slide-org9967722">
-<h3 id="org9967722">Type constructors</h3>
+<section id="slide-orgf99e47f">
+<h3 id="orgf99e47f">Type constructors</h3>
 <pre  class="example">
-scala&gt; :k Int
-Int's kind is A
+ scala&gt; :k Int
+ Int's kind is A
 
+ scala&gt; :k List
+ List's kind is F[+A]
+
+ scala&gt; :k Option
+ Option's kind is F[+A]
+
+ scala&gt; :k Either
+ Either's kind is F[+A1,+A2]
+
+ scala&gt; :k Future
+ scala.concurrent.Future's kind is F[+A]
 scala&gt; :k List
 List's kind is F[+A]
 
-scala&gt; :k Option
-Option's kind is F[+A]
+scala&gt; :kind List
+List's kind is F[+A]
 
-scala&gt; :k Either
+scala&gt; trait Foo[A] {
+     | }
+
+scala&gt; new Foo[Int] {}
+val res0: Foo[Int] = $anon$1@2651e783
+
+scala&gt; new Foo[List[Int]] {}
+val res2: Foo[List[Int]] = $anon$1@54ed249f
+
+scala&gt; new Foo[Option[Int]] {}
+val res3: Foo[Option[Int]] = $anon$1@32e9c3af
+scala&gt; trait Bar[F[_]] {}
+trait Bar
+
+scala&gt; new Bar[Int] {}
+               ^
+       error: Int takes no type parameters, expected: 1
+
+scala&gt; new Bar[List] {}
+val res5: Bar[List] = $anon$1@32029cd
+
+scala&gt; 
+
+scala&gt; 
+scala&gt; :kind Either
 Either's kind is F[+A1,+A2]
 
-scala&gt; :k Future
-scala.concurrent.Future's kind is F[+A]
+scala&gt; new Bar[Either] {}
+               ^
+       error: Either takes 2 type parameters, expected: 1
+
+scala&gt; 
+
+
+scala&gt; new Bar[({type l[a] = Either[Int, a]})#l]{}
+val res15: Bar[[a]scala.util.Either[Int,a]] = $anon$1@79893462
+
+
+
 </pre>
+
+</section>
+<section id="slide-orge407437">
+<h3 id="orge407437">Application context and Functor</h3>
+<ul class="fragment roll-in">
+<li><p>
+applicaton contexts (<i>effect</i>)
+</p>
+<ul>
+<li><code>List</code> - effect of repetition of elements</li>
+<li><code>Option</code> - effect of uncertainty</li>
+
+</ul>
+
+<p class="fragment roll-in">
+Effects modelled using a type constructor F[_]
+</p></li>
+
+</ul>
 </section>
 </section>
 </div>

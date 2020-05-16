@@ -203,6 +203,64 @@ val res87: String = 20!
 
  scala> :k Future
  scala.concurrent.Future's kind is F[+A]
+scala> :k List
+List's kind is F[+A]
+
+scala> :kind List
+List's kind is F[+A]
+
+scala> trait Foo[A] {
+     | }
+
+scala> new Foo[Int] {}
+val res0: Foo[Int] = $anon$1@2651e783
+
+scala> new Foo[List[Int]] {}
+val res2: Foo[List[Int]] = $anon$1@54ed249f
+
+scala> new Foo[Option[Int]] {}
+val res3: Foo[Option[Int]] = $anon$1@32e9c3af
+scala> trait Bar[F[_]] {}
+trait Bar
+
+scala> new Bar[Int] {}
+               ^
+       error: Int takes no type parameters, expected: 1
+
+scala> new Bar[List] {}
+val res5: Bar[List] = $anon$1@32029cd
+
+scala> 
+
+scala> 
+scala> :kind Either
+Either's kind is F[+A1,+A2]
+
+scala> new Bar[Either] {}
+               ^
+       error: Either takes 2 type parameters, expected: 1
+
+scala> 
+
+
+scala> new Bar[({type l[a] = Either[Int, a]})#l]{}
+val res15: Bar[[a]scala.util.Either[Int,a]] = $anon$1@79893462
+
+
+
     #+end_src
+
+** Application context and Functor
+
+    #+ATTR_REVEAL: :frag roll-in
+   - applicaton contexts (/effect/)
+     - =List= - effect of repetition of elements 
+     - =Option= - effect of uncertainty
+
+    #+ATTR_REVEAL: :frag roll-in
+    Effects modelled using a type constructor F[_]
+    
+A functor gives an ability to lift a function into a specific context(effect)
+ 
 
 
