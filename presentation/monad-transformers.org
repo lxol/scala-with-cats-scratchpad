@@ -1,0 +1,88 @@
+#+OPTIONS: num:nil toc:nil
+#+REVEAL_HLEVEL: 1
+# #+REVEAL_TRANS: None/Fade/Slide/Convex/Concave/Zoom
+#+REVEAL_TRANS: None
+
+#+REVEAL_INIT_OPTIONS: slideNumber:"c/t", width:1400, height:1000
+#+Title: Monad Transformers
+
+* Chapter 4 Monad Transformers
+** Nested for-comprehension example
+DB user lookup can
+- fail because of technical issues
+- return user
+- fail becase user is not in DB
+  
+#+begin_src scala
+def lookupUserName(id: Long): Either[Error, Option[String]] =
+  for {
+    optUser <- lookupUser(id)
+  } yield {
+    for { user <- optUser } yield user.name
+  }
+#+end_src
+
+** Exercise: Composing Monads
+
+   
+   #+begin_src scala
+def compose[M1[_]: Monad, M2[_]: Monad] = {
+  type Composed[A] = M1[M2[A]]
+  new Monad[Composed] {
+    def pure[A](a: A): Composed[A] = a.pure[M2].pure[M1]
+
+    def flatMap[A, B](fa: Composed[A])(f: A => Composed[B]): Composed[B] = ???
+  }
+}
+   #+end_src
+
+   #+REVEAL: split:t
+
+   An attempt to use flatMap
+   #+begin_src scala
+     def compose[M1[_]: Monad, M2[_]: Monad] = {
+       type Composed[A] = M1[M2[A]]
+
+       new Monad[Composed] {
+          def pure[A](a: A): Composed[A] = a.pure[M2].pure[M1]
+
+          def flatMap[A, B](fa: Composed[A])(f: A => Composed[B]): Composed[B] =
+               Monad[M1].flatMap(fa)(m => Monad[M2].flatMap(m)(f))
+
+          def tailRecM[A, B](a: A)(f: A => Composed[Either[A,B]]): Composed[B] = ???
+        }
+       }
+
+   #+end_src
+   #+begin_example
+     cmd8.sc:8: type mismatch;
+      found   : A => Composed[B]
+         (which expands to)  A => M1[M2[B]]
+      required: A => M2[?]
+             Monad[M1].flatMap(fa)(m => Monad[M2].flatMap(m)(f))
+
+      Compilation Failed
+   #+end_example
+
+   #+REVEAL: split:t
+
+   M2 is Option
+   #+begin_src scala
+     def compose[M1[_]: Monad] = {
+       type Composed[A] = M1[Option[A]]
+
+       new Monad[Composed] {
+          def pure[A](a: A): Composed[A] = a.pure[Option].pure[M1]
+
+          def flatMap[A, B](fa: Composed[A])(f: A => Composed[B]): Composed[B] =
+               Monad[M1].flatMap(fa)(m => m.fold[Composed[B]](Option.empty.pure[M1])(f) )
+
+          def tailRecM[A, B](a: A)(f: A => Composed[Either[A,B]]): Composed[B] = ???
+        }
+       }
+   #+end_src
+
+
+   #+REVEAL: split:t
+    It is impossible to write a general definition of =flatMap=
+    without knowing something about M1 or M2.
