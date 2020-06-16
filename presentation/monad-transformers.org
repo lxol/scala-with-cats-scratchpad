@@ -6,8 +6,7 @@
 #+REVEAL_INIT_OPTIONS: slideNumber:"c/t", width:1400, height:1000
 #+Title: Monad Transformers
 
-* Chapter 4 Monad Transformers
-** Nested for-comprehension example
+* Nested for-comprehension example
 DB user lookup can
 - fail because of technical issues
 - return user
@@ -22,7 +21,7 @@ def lookupUserName(id: Long): Either[Error, Option[String]] =
   }
 #+end_src
 
-** Exercise: Composing Monads
+* Exercise: Composing Monads
 
    
    #+begin_src scala
@@ -86,3 +85,119 @@ def compose[M1[_]: Monad, M2[_]: Monad] = {
    #+REVEAL: split:t
     It is impossible to write a general definition of =flatMap=
     without knowing something about M1 or M2.
+
+* A Transformative Example 
+   OptionT composes Option with other Monad.
+  
+   
+   #+REVEAL: split:t
+#+begin_src scala
+  import cats.data.OptionT
+  type ListOption[A] = OptionT[List, A]
+#+end_src
+
+   #+REVEAL: split:t
+OptionT constructor creates instances.
+
+#+begin_src scala
+  @ val result1: ListOption[Int] = OptionT(List(Option(10), None))
+  result1: ListOption[Int] = OptionT(List(Some(10), None))
+
+  @ val result2: ListOption[Int] = 32.pure[ListOption]
+  result2: ListOption[Int] = OptionT(List(Some(32)))
+
+#+end_src
+
+   #+REVEAL: split:t
+   
+  map and flatMap work as expected on combined monads 
+   #+begin_src scala
+     @ for {
+         r1 <- result1
+         r2 <- result2
+       } yield r1 + r2
+     res32: OptionT[List, Int] = OptionT(List(Some(42), None))
+   #+end_src
+
+
+* Monad Transformers in Cats
+   Monad transformer is a monad that wraps STACK of monads.
+ 
+  
+ [[./sandwich.jpeg]]
+
+   
+   #+REVEAL: split:t
+   Main concepts: 
+   
+- the available transformer classes;
+- how to build stacks of monads using transformers;
+- how to construct instances of a monad stack; and
+- how to pull apart a stack to access the wrapped monads.
+
+** The Monad Transformer Classes
+
+   - cats.data.OptionT
+   - cats.data.EitherT
+   - cats.data.ReaderT == cats.data.Kleisli "kleisli arrow"
+   - cats.data.WriterT
+   - cats.data.EitherT
+   - cats.data.StateT
+   - cats.data.IdT
+
+     
+** Building Monad Stacks
+   
+   
+   #+begin_src scala
+     type ListOption[A] = OptionT[List, A]
+   #+end_src
+   [[./trans-parts.png]]
+
+   #+REVEAL: split:t
+   
+   Outer Monad is HKT of 2 type parameters
+   
+#+begin_src scala
+  // Alias Either to a type constructor with one parameter:
+  type ErrorOr[A] = Either[String, A]
+  // Build our final monad stack using OptionT:
+  type ErrorOrOption[A] = OptionT[ErrorOr, A]
+#+end_src
+
+   #+REVEAL: split:t
+   
+Stack of three of more monads.
+ 
+ Let's create Future of an Either of Option.
+
+   Future[Either[E, Option[A]]]
+
+   #+REVEAL: split:t
+
+   Future[Either[E, Option[A]]]
+#+begin_src  scala
+
+type FutureEither[A] = EitherT[Future, String, A]
+type FutureEitherOption[A] = OptionT[FutureEither, A]
+
+#+end_src
+
+   #+REVEAL: split:t
+   #+begin_src scala
+     val futureEitherOr: FutureEitherOption[Int] =
+       for {
+         a <- 10.pure[FutureEitherOption]
+         b <- 32.pure[FutureEitherOption]
+       } yield  a + b
+   #+end_src
+
+   #+REVEAL: split:t
+
+   Use kind projector instead of defining type aliases.
+#+begin_src scala
+  @   123.pure[EitherT[Option, String, ?]]
+  res65: EitherT[Option, String, Int] = EitherT(Some(Right(123)))
+#+end_src
+
+** Constructing and Unpacking Instances
