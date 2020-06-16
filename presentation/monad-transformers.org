@@ -200,4 +200,81 @@ type FutureEitherOption[A] = OptionT[FutureEither, A]
   res65: EitherT[Option, String, Int] = EitherT(Some(Right(123)))
 #+end_src
 
-** Constructing and Unpacking Instances
+** Constructing Instances
+
+   Create using apply:
+   
+#+begin_src scala
+  @ val errorStack1 = OptionT[ErrorOr, Int](Right(Some(10)))
+  errorStack1: OptionT[ErrorOr, Int] = OptionT(Right(Some(10)))
+#+end_src
+
+   #+REVEAL: split:t
+   Create using pure:
+   
+#+begin_src scala
+  @ val errorStack2 = 32.pure[ErrorOrOption]
+  errorStack2: ErrorOrOption[Int] = OptionT(Right(Some(32)))
+#+end_src
+
+** Unpacking Instances
+
+   Unpack using value method.
+   #+begin_src scala
+     @ errorStack1.value
+     res68: ErrorOr[Option[Int]] = Right(Some(10))
+
+     @ errorStack2.value.map(_.getOrElse(-1))
+     res69: Either[String, Int] = Right(32)
+
+   #+end_src
+
+   #+REVEAL: split:t
+   More than one call to value to unpack larger stack.
+   #+begin_src scala
+
+     @ futureEitherOr
+     res70: FutureEitherOption[Int] = OptionT(EitherT(Future(Success(Right(Some(42))))))
+
+     @ val intermediate = futureEitherOr.value
+     intermediate: FutureEither[Option[Int]] = EitherT(Future(Success(Right(Some(42)))))
+
+     @ val stack = intermediate.value
+     stack: Future[Either[String, Option[Int]]] = Future(Success(Right(Some(42))))
+
+     @ Await.result(stack, 1.second)
+     res73: Either[String, Option[Int]] = Right(Some(42))
+
+   #+end_src
+
+
+** Default instances
+  Many monads are defined using the transformer and Id monad.
+  #+begin_src scala 
+    type Reader[E, A] = ReaderT[Id, E, A] // = Kleisli[Id, E, A]
+    type Writer[W, A] = WriterT[Id, W, A]
+    type State[S, A] = StateT[Id, S, A]
+  #+end_src
+
+   #+REVEAL: split:t
+   Some monads are defined separately but they tend to mirror the
+   methods of the corresponding monad.
+   
+   #+ATTR_REVEAL: :frag roll-in
+   OptionT defines getOrElse
+
+   #+ATTR_REVEAL: :frag roll-in
+   EitherT defines fold, bimap, swap etc...
+
+** Usage Patterns
+  To operate on transformers in different context we can end up having
+  to unpack and repack them.
+
+   #+REVEAL: split:t
+   Approach one:
+
+   Create a single "super stack" and sticking to in throughout our
+   code base.
+
+   #+REVEAL: split:t
+   Approach two:
