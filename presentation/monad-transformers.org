@@ -270,11 +270,66 @@ type FutureEitherOption[A] = OptionT[FutureEither, A]
   To operate on transformers in different context we can end up having
   to unpack and repack them.
 
-   #+REVEAL: split:t
-   Approach one:
+***  Usage patters:  Approach one
 
-   Create a single "super stack" and sticking to in throughout our
+   Create a single "super stack" and sticking to it throughout our
    code base.
 
-   #+REVEAL: split:t
+***  Usage patters:  Approach two
    Approach two:
+ 
+   Use monad transformers as local "glue code".
+
+   #+ATTR_REVEAL: :frag roll-in
+    
+   Expose untransformed stacks at module boundaries
+
+   #+REVEAL: split:t
+
+   #+begin_src scala
+
+     type Logged[A] = Writer[List[String], A]
+
+     // Methods generally return untransformed stacks:
+     def parseNumber(str: String): Logged[Option[Int]] =
+       util.Try(str.toInt).toOption match {
+         case Some(num) => Writer(List(s"Read $str"), Some(num))
+         case None      => Writer(List(s"Failed on $str"), None)
+       }
+   #+end_src
+
+   #+ATTR_REVEAL: :frag roll-in
+   Logged[Option[Int]] is untransformed stack
+
+
+   #+REVEAL: split:t
+
+   #+begin_src scala
+
+     // Consumers use monad transformers locally to simplify composition:
+     def addAll(a: String, b: String, c: String): Logged[Option[Int]] = {
+       import cats.data.OptionT
+       val result = for {
+         a <- OptionT(parseNumber(a))
+         b <- OptionT(parseNumber(b))
+         c <- OptionT(parseNumber(c))
+       } yield a + b + c
+       result.value
+     }
+
+   #+end_src
+   
+   #+ATTR_REVEAL: :frag roll-in
+   Transformed stack is used only inside addAll. 
+
+   #+ATTR_REVEAL: :frag roll-in
+   To outside world we expose untransformed stack.
+
+
+   #+REVEAL: split:t
+   
+   This approach doesn't force OptionT on other users' code:
+   #+begin_src scala
+     val result1 = addAll("1", "2", "3")
+     val result2 = addAll("1", "a", "3")
+   #+end_src
