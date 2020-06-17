@@ -1,0 +1,148 @@
+#+OPTIONS: num:nil toc:nil
+#+REVEAL_HLEVEL: 1
+# #+REVEAL_TRANS: None/Fade/Slide/Convex/Concave/Zoom
+#+REVEAL_TRANS: None
+
+#+REVEAL_INIT_OPTIONS: slideNumber:"c/t", width:1400, height:1000
+#+Title: Semigroupal and Applicative
+
+* Motivation
+
+  Functors and monads let us sequence operations using =flatMap= and
+  =map=
+
+#+ATTR_REVEAL: :frag roll-in
+#+begin_src scala
+  for {
+    a <- parseInt("a")
+    b <- parseInt("b")
+    c <- parseInt("c")
+  } yield (a + b + c)
+// res1: scala.util.Either[String,Int] = Left(Couldn't read a)
+#+end_src
+
+#+ATTR_REVEAL: :frag roll-in
+Fails on the first call to parseInt and doesn't go any further
+
+#+REVEAL: split:t
+
+Concurrent evaluation of Futures is impossible when we sequence them
+using flatMap.
+
+#+ATTR_REVEAL: :frag roll-in
+#+begin_src scala
+  // context2 is dependent on value1:
+  context1.flatMap(value1 => context2)
+#+end_src
+
+#+REVEAL: split:t
+ Semigroupal and Applicative to the rescue!
+
+#+REVEAL: split:t
+
+Semigroupal encompass the notion of composing pairs of contexts.
+
+#+REVEAL: split:t
+
+Applicative provides a way of applying functions to parameters within
+context.
+
+
+#+ATTR_REVEAL: :frag roll-in
+Cats formulates Applicative in terms of semigroupal formulation.
+
+Haskell and Scalaz - in terms of function application.
+
+* Semigroupal
+
+cats.Semigroupal combines contexts.  
+
+#+begin_src scala
+  trait Semigroupal[F[_]] {
+    def product[A, B](fa: F[A], fb: F[B]): F[(A, B)]
+  }
+#+end_src
+
+#+ATTR_REVEAL: :frag roll-in
+Note that fa and fb are independent of one another.
+
+** Joining Two Contexts
+
+Semigroup joins values
+#+begin_src scala
+  trait Semigroup[A] {
+   def combine(x: A, y: A): A
+  }
+#+end_src
+
+#+ATTR_REVEAL: :frag roll-in
+Semigroupal joins contexts
+#+ATTR_REVEAL: :frag roll-in
+#+begin_src scala
+  trait Semigroupal[F[_]] {
+    def product[A, B](fa: F[A], fb: F[B]): F[(A, B)]
+  }
+#+end_src
+
+#+REVEAL: split:t
+
+#+begin_src scala
+
+  @ Semigroupal[Option].product(Some(123), None)
+  res122: Option[Tuple2[Int, Nothing]] = None
+
+  @ Semigroupal[Option].product(Some(123), Some("abc"))
+  res123: Option[(Int, String)] = Some((123, "abc"))
+
+#+end_src
+
+** Joining Three or More Contexts
+
+#+begin_src scala
+  @ Semigroupal.tuple3(Option(1), Option(2), Option(3))
+  res183: Option[(Int, Int, Int)] = Some((1, 2, 3))
+
+  @ Semigroupal.tuple3(Option(1), Option(2), Option.empty[Int])
+  res184: Option[(Int, Int, Int)] = None
+#+end_src
+
+#+REVEAL: split:t
+#+begin_src scala
+  @ Semigroupal.map3(Option(1), Option(2), Option(3))(_ + _ + _)
+  res185: Option[Int] = Some(6)
+
+  @ Semigroupal.map2(Option(1), Option.empty[Int])(_ + _)
+  res186: Option[Int] = None
+
+#+end_src
+
+** Apply Syntax
+tuppled   
+#+begin_src scala
+@ import cats.instances.option._ // for Semigroupal
+@ import cats.syntax.apply._
+
+@ (Option(123), Option("abc")).tupled
+res201: Option[(Int, String)] = Some((123, "abc"))
+
+@ (Option(123), Option("abc"), Option(true)).tupled
+res202: Option[(Int, String, Boolean)] = Some((123, "abc", true))
+
+#+end_src
+ 
+#+REVEAL: split:t
+mapN
+#+begin_src scala
+@ case class Cat(name: String, born: Int, color: String)
+defined class Cat
+
+@ (
+  Option("Garfield"),
+  Option(1978),
+  Option("Orange & black")
+  ).mapN(Cat.apply)
+res204: Option[Cat] = Some(Cat("Garfield", 1978, "Orange & black"))
+
+#+end_src
+
+** Fancy Functors and Apply Syntax
