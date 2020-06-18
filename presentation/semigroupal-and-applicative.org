@@ -55,7 +55,7 @@ Haskell and Scalaz - in terms of function application.
 
 * Semigroupal
 
-cats.Semigroupal combines contexts.  
+cats.Semigroupal combines contexts.
 
 #+begin_src scala
   trait Semigroupal[F[_]] {
@@ -117,7 +117,7 @@ Semigroupal joins contexts
 #+end_src
 
 ** Apply Syntax
-tuppled   
+tuppled
 #+begin_src scala
 @ import cats.instances.option._ // for Semigroupal
 @ import cats.syntax.apply._
@@ -129,7 +129,7 @@ res201: Option[(Int, String)] = Some((123, "abc"))
 res202: Option[(Int, String, Boolean)] = Some((123, "abc", true))
 
 #+end_src
- 
+
 #+REVEAL: split:t
 mapN
 #+begin_src scala
@@ -146,3 +146,36 @@ res204: Option[Cat] = Some(Cat("Garfield", 1978, "Orange & black"))
 #+end_src
 
 ** Fancy Functors and Apply Syntax
+   imapN is used to create an instance of Monoid
+#+begin_src scala
+  @ case class Cat(name: String, yearOfBirth: Int, favoriteFoods: List[String])
+
+  @ val tupleToCat: (String, Int, List[String]) => Cat = Cat.apply _
+
+  @ val catToTuple: Cat => (String, Int, List[String]) =
+    cat => (cat.name, cat.yearOfBirth, cat.favoriteFoods)
+
+  @ implicit val catMonoid: Monoid[Cat] = (
+    Monoid[String],
+    Monoid[Int],
+    Monoid[List[String]]
+    ).imapN(tupleToCat)(catToTuple)
+
+#+end_src
+
+#+begin_src scala
+  @ catMonoid.empty
+  res215: Cat = Cat("", 0, List())
+
+  @ catMonoid.combine(Cat("Smudge", 2, List("fish")), Cat("Molly", 3, List("meat")))
+  res239: Cat = Cat("SmudgeMolly", 5, List("fish", "meat"))
+#+end_src
+
+#+ATTR_REVEAL: :frag roll-in
+Similar to a "normal" imap, where the first function (map) converts output of
+empty and combine methods and the second one (contramap) deals with inputs of combine.
+#+ATTR_REVEAL: :frag roll-in
+#+begin_src scala
+@ Monoid[Int].imap(_.toString)(_.toInt)
+res237: Monoid[String] = cats.instances.InvariantMonoidalInstances$$anon$3$$anon$5@587dfa33
+#+end_src
