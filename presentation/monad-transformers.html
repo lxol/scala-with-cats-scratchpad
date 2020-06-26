@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Monad Transformers</title>
+<style type="text/css">
+.underline { text-decoration: underline; }
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/css/reveal.css"/>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/css/theme/moon.css" id="theme"/>
+
+
+<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+<script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = 'https://cdn.jsdelivr.net/npm/reveal.js/css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+</script>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+<section id="sec-title-slide"><h1 class="title">Monad Transformers</h1><p class="date">Created: 2020-06-16 Tue 11:16</p>
+</section>
+
+<section>
+<section id="slide-org52d2fc9">
+<h2 id="org52d2fc9">Nested for-comprehension example</h2>
+<p>
+DB user lookup can
+</p>
+<ul>
+<li>fail because of technical issues</li>
+<li>return user</li>
+<li>fail becase user is not in DB</li>
+
+</ul>
+
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim><span style="color: #F0DFAF; font-weight: bold;">def</span> <span style="color: #93E0E3;">lookupUserName</span>(id<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Long</span>)<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Either</span>[<span style="color: #BFEBBF;">Error</span>, <span style="color: #BFEBBF;">Option</span>[<span style="color: #BFEBBF;">String</span>]] <span style="color: #F0DFAF; font-weight: bold;">=</span>
+  <span style="color: #F0DFAF; font-weight: bold;">for</span> {
+    optUser <span style="color: #F0DFAF; font-weight: bold;">&lt;-</span> lookupUser(id)
+  } <span style="color: #F0DFAF; font-weight: bold;">yield</span> {
+    <span style="color: #F0DFAF; font-weight: bold;">for</span> { user <span style="color: #F0DFAF; font-weight: bold;">&lt;-</span> optUser } <span style="color: #F0DFAF; font-weight: bold;">yield</span> user.name
+  }
+</code></pre>
+</div>
+
+</section>
+</section>
+<section>
+<section id="slide-org07f5ca7">
+<h2 id="org07f5ca7">Exercise: Composing Monads</h2>
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim><span style="color: #F0DFAF; font-weight: bold;">def</span> <span style="color: #93E0E3;">compose</span>[<span style="color: #BFEBBF;">M1</span>[<span style="color: #F0DFAF; font-weight: bold;">_</span>]<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Monad</span>, <span style="color: #BFEBBF;">M2</span>[<span style="color: #F0DFAF; font-weight: bold;">_</span>]<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Monad</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> {
+  <span style="color: #F0DFAF; font-weight: bold;">type</span> <span style="color: #BFEBBF;">Composed</span>[<span style="color: #BFEBBF;">A</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">M1</span>[<span style="color: #BFEBBF;">M2</span>[<span style="color: #BFEBBF;">A</span>]]
+  <span style="color: #F0DFAF; font-weight: bold;">new</span> <span style="color: #7CB8BB;">Monad</span>[<span style="color: #BFEBBF;">Composed</span>] {
+    <span style="color: #F0DFAF; font-weight: bold;">def</span> <span style="color: #93E0E3;">pure</span>[<span style="color: #BFEBBF;">A</span>](a<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">A</span>)<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Composed</span>[<span style="color: #BFEBBF;">A</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> a.pure[<span style="color: #BFEBBF;">M2</span>].pure[<span style="color: #BFEBBF;">M1</span>]
+
+    <span style="color: #F0DFAF; font-weight: bold;">def</span> <span style="color: #93E0E3;">flatMap</span>[<span style="color: #BFEBBF;">A</span>, <span style="color: #BFEBBF;">B</span>](fa<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Composed</span>[<span style="color: #BFEBBF;">A</span>])(f<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">A</span> <span style="color: #F0DFAF; font-weight: bold;">=&gt;</span> <span style="color: #BFEBBF;">Composed</span>[<span style="color: #BFEBBF;">B</span>])<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Composed</span>[<span style="color: #BFEBBF;">B</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> ???
+  }
+}
+</code></pre>
+</div>
+
+</section>
+<section id="slide-org07f5ca7-split">
+
+<h2>Exercise: Composing Monads</h2>
+
+<p>
+An attempt to use flatMap
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim><span style="color: #F0DFAF; font-weight: bold;">def</span> <span style="color: #93E0E3;">compose</span>[<span style="color: #BFEBBF;">M1</span>[<span style="color: #F0DFAF; font-weight: bold;">_</span>]<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Monad</span>, <span style="color: #BFEBBF;">M2</span>[<span style="color: #F0DFAF; font-weight: bold;">_</span>]<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Monad</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> {
+  <span style="color: #F0DFAF; font-weight: bold;">type</span> <span style="color: #BFEBBF;">Composed</span>[<span style="color: #BFEBBF;">A</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">M1</span>[<span style="color: #BFEBBF;">M2</span>[<span style="color: #BFEBBF;">A</span>]]
+
+  <span style="color: #F0DFAF; font-weight: bold;">new</span> <span style="color: #7CB8BB;">Monad</span>[<span style="color: #BFEBBF;">Composed</span>] {
+     <span style="color: #F0DFAF; font-weight: bold;">def</span> <span style="color: #93E0E3;">pure</span>[<span style="color: #BFEBBF;">A</span>](a<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">A</span>)<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Composed</span>[<span style="color: #BFEBBF;">A</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> a.pure[<span style="color: #BFEBBF;">M2</span>].pure[<span style="color: #BFEBBF;">M1</span>]
+
+     <span style="color: #F0DFAF; font-weight: bold;">def</span> <span style="color: #93E0E3;">flatMap</span>[<span style="color: #BFEBBF;">A</span>, <span style="color: #BFEBBF;">B</span>](fa<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Composed</span>[<span style="color: #BFEBBF;">A</span>])(f<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">A</span> <span style="color: #F0DFAF; font-weight: bold;">=&gt;</span> <span style="color: #BFEBBF;">Composed</span>[<span style="color: #BFEBBF;">B</span>])<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Composed</span>[<span style="color: #BFEBBF;">B</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span>
+          <span style="color: #BFEBBF;">Monad</span>[<span style="color: #BFEBBF;">M1</span>].flatMap(fa)(m <span style="color: #F0DFAF; font-weight: bold;">=&gt;</span> <span style="color: #BFEBBF;">Monad</span>[<span style="color: #BFEBBF;">M2</span>].flatMap(m)(f))
+
+     <span style="color: #F0DFAF; font-weight: bold;">def</span> <span style="color: #93E0E3;">tailRecM</span>[<span style="color: #BFEBBF;">A</span>, <span style="color: #BFEBBF;">B</span>](a<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">A</span>)(f<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">A</span> <span style="color: #F0DFAF; font-weight: bold;">=&gt;</span> <span style="color: #BFEBBF;">Composed</span>[<span style="color: #BFEBBF;">Either</span>[<span style="color: #BFEBBF;">A</span>,<span style="color: #BFEBBF;">B</span>]])<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Composed</span>[<span style="color: #BFEBBF;">B</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> ???
+   }
+  }
+
+</code></pre>
+</div>
+<pre class="example">
+cmd8.sc:8: type mismatch;
+ found   : A =&gt; Composed[B]
+    (which expands to)  A =&gt; M1[M2[B]]
+ required: A =&gt; M2[?]
+        Monad[M1].flatMap(fa)(m =&gt; Monad[M2].flatMap(m)(f))
+
+ Compilation Failed
+</pre>
+
+</section>
+<section id="slide-org07f5ca7-split">
+
+<h2>Exercise: Composing Monads</h2>
+
+<p>
+M2 is Option
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim><span style="color: #F0DFAF; font-weight: bold;">def</span> <span style="color: #93E0E3;">compose</span>[<span style="color: #BFEBBF;">M1</span>[<span style="color: #F0DFAF; font-weight: bold;">_</span>]<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Monad</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> {
+  <span style="color: #F0DFAF; font-weight: bold;">type</span> <span style="color: #BFEBBF;">Composed</span>[<span style="color: #BFEBBF;">A</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">M1</span>[<span style="color: #BFEBBF;">Option</span>[<span style="color: #BFEBBF;">A</span>]]
+
+  <span style="color: #F0DFAF; font-weight: bold;">new</span> <span style="color: #7CB8BB;">Monad</span>[<span style="color: #BFEBBF;">Composed</span>] {
+     <span style="color: #F0DFAF; font-weight: bold;">def</span> <span style="color: #93E0E3;">pure</span>[<span style="color: #BFEBBF;">A</span>](a<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">A</span>)<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Composed</span>[<span style="color: #BFEBBF;">A</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> a.pure[<span style="color: #BFEBBF;">Option</span>].pure[<span style="color: #BFEBBF;">M1</span>]
+
+     <span style="color: #F0DFAF; font-weight: bold;">def</span> <span style="color: #93E0E3;">flatMap</span>[<span style="color: #BFEBBF;">A</span>, <span style="color: #BFEBBF;">B</span>](fa<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Composed</span>[<span style="color: #BFEBBF;">A</span>])(f<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">A</span> <span style="color: #F0DFAF; font-weight: bold;">=&gt;</span> <span style="color: #BFEBBF;">Composed</span>[<span style="color: #BFEBBF;">B</span>])<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Composed</span>[<span style="color: #BFEBBF;">B</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span>
+          <span style="color: #BFEBBF;">Monad</span>[<span style="color: #BFEBBF;">M1</span>].flatMap(fa)(m <span style="color: #F0DFAF; font-weight: bold;">=&gt;</span> m.fold[<span style="color: #BFEBBF;">Composed</span>[<span style="color: #BFEBBF;">B</span>]](<span style="color: #BFEBBF;">Option</span>.empty.pure[<span style="color: #BFEBBF;">M1</span>])(f) )
+
+     <span style="color: #F0DFAF; font-weight: bold;">def</span> <span style="color: #93E0E3;">tailRecM</span>[<span style="color: #BFEBBF;">A</span>, <span style="color: #BFEBBF;">B</span>](a<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">A</span>)(f<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">A</span> <span style="color: #F0DFAF; font-weight: bold;">=&gt;</span> <span style="color: #BFEBBF;">Composed</span>[<span style="color: #BFEBBF;">Either</span>[<span style="color: #BFEBBF;">A</span>,<span style="color: #BFEBBF;">B</span>]])<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Composed</span>[<span style="color: #BFEBBF;">B</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> ???
+   }
+  }
+</code></pre>
+</div>
+
+
+</section>
+<section id="slide-org07f5ca7-split">
+
+<h2>Exercise: Composing Monads</h2>
+<p>
+It is impossible to write a general definition of <code>flatMap</code>
+without knowing something about M1 or M2.
+</p>
+
+</section>
+</section>
+<section>
+<section id="slide-orgad1767c">
+<h2 id="orgad1767c">A Transformative Example</h2>
+<p>
+OptionT composes Option with other Monad.
+</p>
+
+
+</section>
+<section id="slide-orgad1767c-split">
+
+<h2>A Transformative Example</h2>
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim><span style="color: #F0DFAF; font-weight: bold;">import</span> cats.data.<span style="color: #BFEBBF;">OptionT</span>
+<span style="color: #F0DFAF; font-weight: bold;">type</span> <span style="color: #BFEBBF;">ListOption</span>[<span style="color: #BFEBBF;">A</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">OptionT</span>[<span style="color: #BFEBBF;">List</span>, <span style="color: #BFEBBF;">A</span>]
+</code></pre>
+</div>
+
+</section>
+<section id="slide-orgad1767c-split">
+
+<h2>A Transformative Example</h2>
+<p>
+OptionT constructor creates instances.
+</p>
+
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim><span style="color: #F0DFAF; font-weight: bold;">@</span> <span style="color: #F0DFAF; font-weight: bold;">val</span> <span style="color: #DFAF8F;">result1</span><span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">ListOption</span>[<span style="color: #BFEBBF;">Int</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">OptionT</span>(<span style="color: #BFEBBF;">List</span>(<span style="color: #BFEBBF;">Option</span>(<span style="color: #BFEBBF;">10</span>), <span style="color: #BFEBBF;">None</span>))
+result1<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">ListOption</span>[<span style="color: #BFEBBF;">Int</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">OptionT</span>(<span style="color: #BFEBBF;">List</span>(<span style="color: #BFEBBF;">Some</span>(<span style="color: #BFEBBF;">10</span>), <span style="color: #BFEBBF;">None</span>))
+
+<span style="color: #F0DFAF; font-weight: bold;">@</span> <span style="color: #F0DFAF; font-weight: bold;">val</span> <span style="color: #DFAF8F;">result2</span><span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">ListOption</span>[<span style="color: #BFEBBF;">Int</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">32.</span>pure[<span style="color: #BFEBBF;">ListOption</span>]
+result2<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">ListOption</span>[<span style="color: #BFEBBF;">Int</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">OptionT</span>(<span style="color: #BFEBBF;">List</span>(<span style="color: #BFEBBF;">Some</span>(<span style="color: #BFEBBF;">32</span>)))
+
+</code></pre>
+</div>
+
+</section>
+<section id="slide-orgad1767c-split">
+
+<h2>A Transformative Example</h2>
+
+<p>
+map and flatMap work as expected on combined monads 
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim><span style="color: #F0DFAF; font-weight: bold;">@</span> <span style="color: #F0DFAF; font-weight: bold;">for</span> {
+    r1 <span style="color: #F0DFAF; font-weight: bold;">&lt;-</span> result1
+    r2 <span style="color: #F0DFAF; font-weight: bold;">&lt;-</span> result2
+  } <span style="color: #F0DFAF; font-weight: bold;">yield</span> r1 + r2
+res32<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">OptionT</span>[<span style="color: #BFEBBF;">List</span>, <span style="color: #BFEBBF;">Int</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">OptionT</span>(<span style="color: #BFEBBF;">List</span>(<span style="color: #BFEBBF;">Some</span>(<span style="color: #BFEBBF;">42</span>), <span style="color: #BFEBBF;">None</span>))
+</code></pre>
+</div>
+
+
+</section>
+</section>
+<section>
+<section id="slide-org5ba9d4e">
+<h2 id="org5ba9d4e">Monad Transformers in Cats</h2>
+<p>
+Monad transformer is a monad that wraps STACK of monads.
+</p>
+
+
+
+<div class="figure">
+<p><img src="./sandwich.jpeg" alt="sandwich.jpeg" />
+</p>
+</div>
+
+
+</section>
+<section id="slide-org5ba9d4e-split">
+
+<h2>Monad Transformers in Cats</h2>
+<p>
+Main concepts: 
+</p>
+
+<ul>
+<li>the available transformer classes;</li>
+<li>how to build stacks of monads using transformers;</li>
+<li>how to construct instances of a monad stack; and</li>
+<li>how to pull apart a stack to access the wrapped monads.</li>
+
+</ul>
+
+</section>
+<section id="slide-org489555e">
+<h3 id="org489555e">The Monad Transformer Classes</h3>
+<ul>
+<li>cats.data.OptionT</li>
+<li>cats.data.EitherT</li>
+<li>cats.data.ReaderT == cats.data.Kleisli "kleisli arrow"</li>
+<li>cats.data.WriterT</li>
+<li>cats.data.EitherT</li>
+<li>cats.data.StateT</li>
+<li>cats.data.IdT</li>
+
+</ul>
+
+
+</section>
+<section id="slide-org51cc5a6">
+<h3 id="org51cc5a6">Building Monad Stacks</h3>
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim><span style="color: #F0DFAF; font-weight: bold;">type</span> <span style="color: #BFEBBF;">ListOption</span>[<span style="color: #BFEBBF;">A</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">OptionT</span>[<span style="color: #BFEBBF;">List</span>, <span style="color: #BFEBBF;">A</span>]
+</code></pre>
+</div>
+
+<div class="figure">
+<p><img src="./trans-parts.png" alt="trans-parts.png" />
+</p>
+</div>
+
+</section>
+<section id="slide-org51cc5a6-split">
+
+<h3>Building Monad Stacks</h3>
+
+<p>
+Outer Monad is HKT of 2 type parameters
+</p>
+
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim><span style="color: #5F7F5F;">// </span><span style="color: #7F9F7F;">Alias Either to a type constructor with one parameter:</span>
+<span style="color: #F0DFAF; font-weight: bold;">type</span> <span style="color: #BFEBBF;">ErrorOr</span>[<span style="color: #BFEBBF;">A</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">Either</span>[<span style="color: #BFEBBF;">String</span>, <span style="color: #BFEBBF;">A</span>]
+<span style="color: #5F7F5F;">// </span><span style="color: #7F9F7F;">Build our final monad stack using OptionT:</span>
+<span style="color: #F0DFAF; font-weight: bold;">type</span> <span style="color: #BFEBBF;">ErrorOrOption</span>[<span style="color: #BFEBBF;">A</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">OptionT</span>[<span style="color: #BFEBBF;">ErrorOr</span>, <span style="color: #BFEBBF;">A</span>]
+</code></pre>
+</div>
+
+</section>
+<section id="slide-org51cc5a6-split">
+
+<h3>Building Monad Stacks</h3>
+
+<p>
+Stack of three of more monads.
+</p>
+
+<p>
+Let's create Future of an Either of Option.
+</p>
+
+<p>
+Future[Either[E, Option[A]]]
+</p>
+
+</section>
+<section id="slide-org51cc5a6-split">
+
+<h3>Building Monad Stacks</h3>
+
+<p>
+Future[Either[E, Option[A]]]
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim>
+<span style="color: #F0DFAF; font-weight: bold;">type</span> <span style="color: #BFEBBF;">FutureEither</span>[<span style="color: #BFEBBF;">A</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">EitherT</span>[<span style="color: #BFEBBF;">Future</span>, <span style="color: #BFEBBF;">String</span>, <span style="color: #BFEBBF;">A</span>]
+<span style="color: #F0DFAF; font-weight: bold;">type</span> <span style="color: #BFEBBF;">FutureEitherOption</span>[<span style="color: #BFEBBF;">A</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">OptionT</span>[<span style="color: #BFEBBF;">FutureEither</span>, <span style="color: #BFEBBF;">A</span>]
+
+</code></pre>
+</div>
+
+</section>
+<section id="slide-org51cc5a6-split">
+
+<h3>Building Monad Stacks</h3>
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim><span style="color: #F0DFAF; font-weight: bold;">val</span> <span style="color: #DFAF8F;">futureEitherOr</span><span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">FutureEitherOption</span>[<span style="color: #BFEBBF;">Int</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span>
+  <span style="color: #F0DFAF; font-weight: bold;">for</span> {
+    a <span style="color: #F0DFAF; font-weight: bold;">&lt;-</span> <span style="color: #BFEBBF;">10.</span>pure[<span style="color: #BFEBBF;">FutureEitherOption</span>]
+    b <span style="color: #F0DFAF; font-weight: bold;">&lt;-</span> <span style="color: #BFEBBF;">32.</span>pure[<span style="color: #BFEBBF;">FutureEitherOption</span>]
+  } <span style="color: #F0DFAF; font-weight: bold;">yield</span>  a + b
+</code></pre>
+</div>
+
+</section>
+<section id="slide-org51cc5a6-split">
+
+<h3>Building Monad Stacks</h3>
+
+<p>
+Use kind projector instead of defining type aliases.
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim><span style="color: #F0DFAF; font-weight: bold;">@</span>   <span style="color: #BFEBBF;">123.</span>pure[<span style="color: #BFEBBF;">EitherT</span>[<span style="color: #BFEBBF;">Option</span>, <span style="color: #BFEBBF;">String</span>, ?]]
+res65<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">EitherT</span>[<span style="color: #BFEBBF;">Option</span>, <span style="color: #BFEBBF;">String</span>, <span style="color: #BFEBBF;">Int</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">EitherT</span>(<span style="color: #BFEBBF;">Some</span>(<span style="color: #BFEBBF;">Right</span>(<span style="color: #BFEBBF;">123</span>)))
+</code></pre>
+</div>
+
+</section>
+<section id="slide-orgf29cd44">
+<h3 id="orgf29cd44">Constructing Instances</h3>
+<p>
+Create using apply:
+</p>
+
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim><span style="color: #F0DFAF; font-weight: bold;">@</span> <span style="color: #F0DFAF; font-weight: bold;">val</span> <span style="color: #DFAF8F;">errorStack1</span> <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">OptionT</span>[<span style="color: #BFEBBF;">ErrorOr</span>, <span style="color: #BFEBBF;">Int</span>](<span style="color: #BFEBBF;">Right</span>(<span style="color: #BFEBBF;">Some</span>(<span style="color: #BFEBBF;">10</span>)))
+errorStack1<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">OptionT</span>[<span style="color: #BFEBBF;">ErrorOr</span>, <span style="color: #BFEBBF;">Int</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">OptionT</span>(<span style="color: #BFEBBF;">Right</span>(<span style="color: #BFEBBF;">Some</span>(<span style="color: #BFEBBF;">10</span>)))
+</code></pre>
+</div>
+
+</section>
+<section id="slide-orgf29cd44-split">
+
+<h3>Constructing Instances</h3>
+<p>
+Create using pure:
+</p>
+
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim><span style="color: #F0DFAF; font-weight: bold;">@</span> <span style="color: #F0DFAF; font-weight: bold;">val</span> <span style="color: #DFAF8F;">errorStack2</span> <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">32.</span>pure[<span style="color: #BFEBBF;">ErrorOrOption</span>]
+errorStack2<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">ErrorOrOption</span>[<span style="color: #BFEBBF;">Int</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">OptionT</span>(<span style="color: #BFEBBF;">Right</span>(<span style="color: #BFEBBF;">Some</span>(<span style="color: #BFEBBF;">32</span>)))
+</code></pre>
+</div>
+
+</section>
+<section id="slide-org4f670be">
+<h3 id="org4f670be">Unpacking Instances</h3>
+<p>
+Unpack using value method.
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim><span style="color: #F0DFAF; font-weight: bold;">@</span> errorStack1.value
+res68<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">ErrorOr</span>[<span style="color: #BFEBBF;">Option</span>[<span style="color: #BFEBBF;">Int</span>]] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">Right</span>(<span style="color: #BFEBBF;">Some</span>(<span style="color: #BFEBBF;">10</span>))
+
+<span style="color: #F0DFAF; font-weight: bold;">@</span> errorStack2.value.map(<span style="color: #F0DFAF; font-weight: bold;">_</span>.getOrElse(<span style="color: #BFEBBF;">-1</span>))
+res69<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Either</span>[<span style="color: #BFEBBF;">String</span>, <span style="color: #BFEBBF;">Int</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">Right</span>(<span style="color: #BFEBBF;">32</span>)
+
+</code></pre>
+</div>
+
+</section>
+<section id="slide-org4f670be-split">
+
+<h3>Unpacking Instances</h3>
+<p>
+More than one call to value to unpack larger stack.
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim>
+<span style="color: #F0DFAF; font-weight: bold;">@</span> futureEitherOr
+res70<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">FutureEitherOption</span>[<span style="color: #BFEBBF;">Int</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">OptionT</span>(<span style="color: #BFEBBF;">EitherT</span>(<span style="color: #BFEBBF;">Future</span>(<span style="color: #BFEBBF;">Success</span>(<span style="color: #BFEBBF;">Right</span>(<span style="color: #BFEBBF;">Some</span>(<span style="color: #BFEBBF;">42</span>))))))
+
+<span style="color: #F0DFAF; font-weight: bold;">@</span> <span style="color: #F0DFAF; font-weight: bold;">val</span> <span style="color: #DFAF8F;">intermediate</span> <span style="color: #F0DFAF; font-weight: bold;">=</span> futureEitherOr.value
+intermediate<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">FutureEither</span>[<span style="color: #BFEBBF;">Option</span>[<span style="color: #BFEBBF;">Int</span>]] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">EitherT</span>(<span style="color: #BFEBBF;">Future</span>(<span style="color: #BFEBBF;">Success</span>(<span style="color: #BFEBBF;">Right</span>(<span style="color: #BFEBBF;">Some</span>(<span style="color: #BFEBBF;">42</span>)))))
+
+<span style="color: #F0DFAF; font-weight: bold;">@</span> <span style="color: #F0DFAF; font-weight: bold;">val</span> <span style="color: #DFAF8F;">stack</span> <span style="color: #F0DFAF; font-weight: bold;">=</span> intermediate.value
+stack<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Future</span>[<span style="color: #BFEBBF;">Either</span>[<span style="color: #BFEBBF;">String</span>, <span style="color: #BFEBBF;">Option</span>[<span style="color: #BFEBBF;">Int</span>]]] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">Future</span>(<span style="color: #BFEBBF;">Success</span>(<span style="color: #BFEBBF;">Right</span>(<span style="color: #BFEBBF;">Some</span>(<span style="color: #BFEBBF;">42</span>))))
+
+<span style="color: #F0DFAF; font-weight: bold;">@</span> <span style="color: #BFEBBF;">Await</span>.result(stack, <span style="color: #BFEBBF;">1.</span>second)
+res73<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Either</span>[<span style="color: #BFEBBF;">String</span>, <span style="color: #BFEBBF;">Option</span>[<span style="color: #BFEBBF;">Int</span>]] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">Right</span>(<span style="color: #BFEBBF;">Some</span>(<span style="color: #BFEBBF;">42</span>))
+
+</code></pre>
+</div>
+
+
+</section>
+<section id="slide-org3cb6388">
+<h3 id="org3cb6388">Default instances</h3>
+<p>
+Many monads are defined using the transformer and Id monad.
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim><span style="color: #F0DFAF; font-weight: bold;">type</span> <span style="color: #BFEBBF;">Reader</span>[<span style="color: #BFEBBF;">E</span>, <span style="color: #BFEBBF;">A</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">ReaderT</span>[<span style="color: #BFEBBF;">Id</span>, <span style="color: #BFEBBF;">E</span>, <span style="color: #BFEBBF;">A</span>] <span style="color: #5F7F5F;">// </span><span style="color: #7F9F7F;">= Kleisli[Id, E, A]</span>
+<span style="color: #F0DFAF; font-weight: bold;">type</span> <span style="color: #BFEBBF;">Writer</span>[<span style="color: #BFEBBF;">W</span>, <span style="color: #BFEBBF;">A</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">WriterT</span>[<span style="color: #BFEBBF;">Id</span>, <span style="color: #BFEBBF;">W</span>, <span style="color: #BFEBBF;">A</span>]
+<span style="color: #F0DFAF; font-weight: bold;">type</span> <span style="color: #BFEBBF;">State</span>[<span style="color: #BFEBBF;">S</span>, <span style="color: #BFEBBF;">A</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">StateT</span>[<span style="color: #BFEBBF;">Id</span>, <span style="color: #BFEBBF;">S</span>, <span style="color: #BFEBBF;">A</span>]
+</code></pre>
+</div>
+
+</section>
+<section id="slide-org3cb6388-split">
+
+<h3>Default instances</h3>
+<p>
+Some monads are defined separately but they tend to mirror the
+methods of the corresponding monad.
+</p>
+
+<p class="fragment roll-in">
+OptionT defines getOrElse
+</p>
+
+<p class="fragment roll-in">
+EitherT defines fold, bimap, swap etc&#x2026;
+</p>
+
+</section>
+<section id="slide-orgeebddb5">
+<h3 id="orgeebddb5">Usage Patterns</h3>
+<p>
+To operate on transformers in different context we can end up having
+to unpack and repack them.
+</p>
+
+</section>
+<section id="slide-orgda6e806">
+<h4 id="orgda6e806">Usage patters:  Approach one</h4>
+<p>
+Create a single "super stack" and sticking to it throughout our
+code base.
+</p>
+
+</section>
+<section id="slide-org6385166">
+<h4 id="org6385166">Usage patters:  Approach two</h4>
+<p>
+Approach two:
+</p>
+
+<p>
+Use monad transformers as local "glue code".
+</p>
+
+<p>
+Expose untransformed stacks at module boundaries
+</p>
+
+</section>
+<section id="slide-org6385166-split">
+
+<h4>Usage patters:  Approach two</h4>
+
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim>
+<span style="color: #F0DFAF; font-weight: bold;">type</span> <span style="color: #BFEBBF;">Logged</span>[<span style="color: #BFEBBF;">A</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">Writer</span>[<span style="color: #BFEBBF;">List</span>[<span style="color: #BFEBBF;">String</span>], <span style="color: #BFEBBF;">A</span>]
+
+<span style="color: #5F7F5F;">// </span><span style="color: #7F9F7F;">Methods generally return untransformed stacks:</span>
+<span style="color: #F0DFAF; font-weight: bold;">def</span> <span style="color: #93E0E3;">parseNumber</span>(str<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">String</span>)<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Logged</span>[<span style="color: #BFEBBF;">Option</span>[<span style="color: #BFEBBF;">Int</span>]] <span style="color: #F0DFAF; font-weight: bold;">=</span>
+  util.<span style="color: #BFEBBF;">Try</span>(str.toInt).toOption <span style="color: #F0DFAF; font-weight: bold;">match</span> {
+    <span style="color: #F0DFAF; font-weight: bold;">case</span> <span style="color: #7CB8BB;">Some</span>(<span style="color: #DFAF8F;">num</span>) <span style="color: #F0DFAF; font-weight: bold;">=&gt;</span> <span style="color: #BFEBBF;">Writer</span>(<span style="color: #BFEBBF;">List</span>(s<span style="color: #CC9393;">"Read </span><span style="color: #DFAF8F;">$str</span><span style="color: #CC9393;">"</span>), <span style="color: #BFEBBF;">Some</span>(num))
+    <span style="color: #F0DFAF; font-weight: bold;">case</span> <span style="color: #BFEBBF;">None</span>      <span style="color: #F0DFAF; font-weight: bold;">=&gt;</span> <span style="color: #BFEBBF;">Writer</span>(<span style="color: #BFEBBF;">List</span>(s<span style="color: #CC9393;">"Failed on </span><span style="color: #DFAF8F;">$str</span><span style="color: #CC9393;">"</span>), <span style="color: #BFEBBF;">None</span>)
+  }
+</code></pre>
+</div>
+
+<p class="fragment roll-in">
+Logged[Option[Int]] is untransformed stack
+</p>
+
+
+</section>
+<section id="slide-org6385166-split">
+
+<h4>Usage patters:  Approach two</h4>
+
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim>
+<span style="color: #5F7F5F;">// </span><span style="color: #7F9F7F;">Consumers use monad transformers locally to simplify composition:</span>
+<span style="color: #F0DFAF; font-weight: bold;">def</span> <span style="color: #93E0E3;">addAll</span>(a<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">String</span>, b<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">String</span>, c<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">String</span>)<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Logged</span>[<span style="color: #BFEBBF;">Option</span>[<span style="color: #BFEBBF;">Int</span>]] <span style="color: #F0DFAF; font-weight: bold;">=</span> {
+  <span style="color: #F0DFAF; font-weight: bold;">import</span> cats.data.<span style="color: #BFEBBF;">OptionT</span>
+  <span style="color: #F0DFAF; font-weight: bold;">val</span> <span style="color: #DFAF8F;">result</span> <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #F0DFAF; font-weight: bold;">for</span> {
+    a <span style="color: #F0DFAF; font-weight: bold;">&lt;-</span> <span style="color: #BFEBBF;">OptionT</span>(parseNumber(a))
+    b <span style="color: #F0DFAF; font-weight: bold;">&lt;-</span> <span style="color: #BFEBBF;">OptionT</span>(parseNumber(b))
+    c <span style="color: #F0DFAF; font-weight: bold;">&lt;-</span> <span style="color: #BFEBBF;">OptionT</span>(parseNumber(c))
+  } <span style="color: #F0DFAF; font-weight: bold;">yield</span> a + b + c
+  result.value
+}
+
+</code></pre>
+</div>
+
+<p class="fragment roll-in">
+Transformed stack is used only inside addAll. 
+</p>
+
+<p class="fragment roll-in">
+To outside world we expose untransformed stack.
+</p>
+
+
+</section>
+<section id="slide-org6385166-split">
+
+<h4>Usage patters:  Approach two</h4>
+
+<p>
+This approach doesn't force OptionT on other users' code:
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim><span style="color: #F0DFAF; font-weight: bold;">val</span> <span style="color: #DFAF8F;">result1</span> <span style="color: #F0DFAF; font-weight: bold;">=</span> addAll(<span style="color: #CC9393;">"1"</span>, <span style="color: #CC9393;">"2"</span>, <span style="color: #CC9393;">"3"</span>)
+<span style="color: #F0DFAF; font-weight: bold;">val</span> <span style="color: #DFAF8F;">result2</span> <span style="color: #F0DFAF; font-weight: bold;">=</span> addAll(<span style="color: #CC9393;">"1"</span>, <span style="color: #CC9393;">"a"</span>, <span style="color: #CC9393;">"3"</span>)
+</code></pre>
+</div>
+</section>
+</section>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js/js/reveal.js"></script>
+
+<script>
+// Full list of configuration options available here:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+slideNumber:"c/t", width:1400, height:1000,
+multiplex: {
+    secret: '', // null if client
+    id: '', // id, obtained from socket.io server
+    url: '' // Location of socket.io server
+},
+
+// Optional libraries used to extend on reveal.js
+dependencies: [
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }]
+});
+</script>
+</body>
+</html>

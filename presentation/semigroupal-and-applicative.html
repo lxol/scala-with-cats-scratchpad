@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Semigroupal and Applicative</title>
+<style type="text/css">
+.underline { text-decoration: underline; }
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/css/reveal.css"/>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/css/theme/moon.css" id="theme"/>
+
+
+<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+<script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = 'https://cdn.jsdelivr.net/npm/reveal.js/css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+</script>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+<section id="sec-title-slide"><h1 class="title">Semigroupal and Applicative</h1><p class="date">Created: 2020-06-18 Thu 07:10</p>
+</section>
+
+<section>
+<section id="slide-orgaf9e391">
+<h2 id="orgaf9e391">Motivation</h2>
+<p>
+Functors and monads let us sequence operations using <code>flatMap</code> and
+<code>map</code>
+</p>
+
+<div class="org-src-container">
+
+<pre  class="fragment roll-in"><code trim>  <span style="color: #F0DFAF; font-weight: bold;">for</span> {
+    a <span style="color: #F0DFAF; font-weight: bold;">&lt;-</span> parseInt(<span style="color: #CC9393;">"a"</span>)
+    b <span style="color: #F0DFAF; font-weight: bold;">&lt;-</span> parseInt(<span style="color: #CC9393;">"b"</span>)
+    c <span style="color: #F0DFAF; font-weight: bold;">&lt;-</span> parseInt(<span style="color: #CC9393;">"c"</span>)
+  } <span style="color: #F0DFAF; font-weight: bold;">yield</span> (a + b + c)
+<span style="color: #5F7F5F;">// </span><span style="color: #7F9F7F;">res1: scala.util.Either[String,Int] = Left(Couldn't read a)</span>
+</code></pre>
+</div>
+
+<p class="fragment roll-in">
+Fails on the first call to parseInt and doesn't go any further
+</p>
+
+</section>
+<section id="slide-orgaf9e391-split">
+
+<h2>Motivation</h2>
+
+<p>
+Concurrent evaluation of Futures is impossible when we sequence them
+using flatMap.
+</p>
+
+<div class="org-src-container">
+
+<pre  class="fragment roll-in"><code trim><span style="color: #5F7F5F;">// </span><span style="color: #7F9F7F;">context2 is dependent on value1:</span>
+context1.flatMap(value1 <span style="color: #F0DFAF; font-weight: bold;">=&gt;</span> context2)
+</code></pre>
+</div>
+
+</section>
+<section id="slide-orgaf9e391-split">
+
+<h2>Motivation</h2>
+<p>
+Semigroupal and Applicative to the rescue!
+</p>
+
+</section>
+<section id="slide-orgaf9e391-split">
+
+<h2>Motivation</h2>
+
+<p>
+Semigroupal encompass the notion of composing pairs of contexts.
+</p>
+
+</section>
+<section id="slide-orgaf9e391-split">
+
+<h2>Motivation</h2>
+
+<p>
+Applicative provides a way of applying functions to parameters within
+context.
+</p>
+
+
+<p class="fragment roll-in">
+Cats formulates Applicative in terms of semigroupal formulation.
+</p>
+
+<p class="fragment roll-in">
+Haskell and Scalaz - in terms of function application.
+</p>
+
+</section>
+</section>
+<section>
+<section id="slide-org7df3805">
+<h2 id="org7df3805">Semigroupal</h2>
+<p>
+cats.Semigroupal combines contexts.
+</p>
+
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim><span style="color: #F0DFAF; font-weight: bold;">trait</span> <span style="color: #7CB8BB;">Semigroupal</span>[<span style="color: #BFEBBF;">F</span>[<span style="color: #F0DFAF; font-weight: bold;">_</span>]] {
+  <span style="color: #F0DFAF; font-weight: bold;">def</span> <span style="color: #93E0E3;">product</span>[<span style="color: #BFEBBF;">A</span>, <span style="color: #BFEBBF;">B</span>](fa<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">F</span>[<span style="color: #BFEBBF;">A</span>], fb<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">F</span>[<span style="color: #BFEBBF;">B</span>])<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">F</span>[(<span style="color: #BFEBBF;">A</span>, <span style="color: #BFEBBF;">B</span>)]
+}
+</code></pre>
+</div>
+
+<p class="fragment roll-in">
+Note that fa and fb are independent of one another.
+</p>
+
+</section>
+<section id="slide-org9b6732e">
+<h3 id="org9b6732e">Joining Two Contexts</h3>
+<p>
+Semigroup joins values
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim><span style="color: #F0DFAF; font-weight: bold;">trait</span> <span style="color: #7CB8BB;">Semigroup</span>[<span style="color: #BFEBBF;">A</span>] {
+ <span style="color: #F0DFAF; font-weight: bold;">def</span> <span style="color: #93E0E3;">combine</span>(x<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">A</span>, y<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">A</span>)<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">A</span>
+}
+</code></pre>
+</div>
+
+<p class="fragment roll-in">
+Semigroupal joins contexts
+</p>
+<div class="org-src-container">
+
+<pre  class="fragment roll-in"><code trim><span style="color: #F0DFAF; font-weight: bold;">trait</span> <span style="color: #7CB8BB;">Semigroupal</span>[<span style="color: #BFEBBF;">F</span>[<span style="color: #F0DFAF; font-weight: bold;">_</span>]] {
+  <span style="color: #F0DFAF; font-weight: bold;">def</span> <span style="color: #93E0E3;">product</span>[<span style="color: #BFEBBF;">A</span>, <span style="color: #BFEBBF;">B</span>](fa<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">F</span>[<span style="color: #BFEBBF;">A</span>], fb<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">F</span>[<span style="color: #BFEBBF;">B</span>])<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">F</span>[(<span style="color: #BFEBBF;">A</span>, <span style="color: #BFEBBF;">B</span>)]
+}
+</code></pre>
+</div>
+
+</section>
+<section id="slide-org9b6732e-split">
+
+<h3>Joining Two Contexts</h3>
+
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim>
+<span style="color: #F0DFAF; font-weight: bold;">@</span> <span style="color: #BFEBBF;">Semigroupal</span>[<span style="color: #BFEBBF;">Option</span>].product(<span style="color: #BFEBBF;">Some</span>(<span style="color: #BFEBBF;">123</span>), <span style="color: #BFEBBF;">None</span>)
+res122<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Option</span>[<span style="color: #BFEBBF;">Tuple2</span>[<span style="color: #BFEBBF;">Int</span>, <span style="color: #BFEBBF;">Nothing</span>]] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">None</span>
+
+<span style="color: #F0DFAF; font-weight: bold;">@</span> <span style="color: #BFEBBF;">Semigroupal</span>[<span style="color: #BFEBBF;">Option</span>].product(<span style="color: #BFEBBF;">Some</span>(<span style="color: #BFEBBF;">123</span>), <span style="color: #BFEBBF;">Some</span>(<span style="color: #CC9393;">"abc"</span>))
+res123<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Option</span>[(<span style="color: #BFEBBF;">Int</span>, <span style="color: #BFEBBF;">String</span>)] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">Some</span>((<span style="color: #BFEBBF;">123</span>, <span style="color: #CC9393;">"abc"</span>))
+
+</code></pre>
+</div>
+
+</section>
+<section id="slide-org93a744a">
+<h3 id="org93a744a">Joining Three or More Contexts</h3>
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim><span style="color: #F0DFAF; font-weight: bold;">@</span> <span style="color: #BFEBBF;">Semigroupal</span>.tuple3(<span style="color: #BFEBBF;">Option</span>(<span style="color: #BFEBBF;">1</span>), <span style="color: #BFEBBF;">Option</span>(<span style="color: #BFEBBF;">2</span>), <span style="color: #BFEBBF;">Option</span>(<span style="color: #BFEBBF;">3</span>))
+res183<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Option</span>[(<span style="color: #BFEBBF;">Int</span>, <span style="color: #BFEBBF;">Int</span>, <span style="color: #BFEBBF;">Int</span>)] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">Some</span>((<span style="color: #BFEBBF;">1</span>, <span style="color: #BFEBBF;">2</span>, <span style="color: #BFEBBF;">3</span>))
+
+<span style="color: #F0DFAF; font-weight: bold;">@</span> <span style="color: #BFEBBF;">Semigroupal</span>.tuple3(<span style="color: #BFEBBF;">Option</span>(<span style="color: #BFEBBF;">1</span>), <span style="color: #BFEBBF;">Option</span>(<span style="color: #BFEBBF;">2</span>), <span style="color: #BFEBBF;">Option</span>.empty[<span style="color: #BFEBBF;">Int</span>])
+res184<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Option</span>[(<span style="color: #BFEBBF;">Int</span>, <span style="color: #BFEBBF;">Int</span>, <span style="color: #BFEBBF;">Int</span>)] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">None</span>
+</code></pre>
+</div>
+
+</section>
+<section id="slide-org93a744a-split">
+
+<h3>Joining Three or More Contexts</h3>
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim><span style="color: #F0DFAF; font-weight: bold;">@</span> <span style="color: #BFEBBF;">Semigroupal</span>.map3(<span style="color: #BFEBBF;">Option</span>(<span style="color: #BFEBBF;">1</span>), <span style="color: #BFEBBF;">Option</span>(<span style="color: #BFEBBF;">2</span>), <span style="color: #BFEBBF;">Option</span>(<span style="color: #BFEBBF;">3</span>))(<span style="color: #F0DFAF; font-weight: bold;">_</span> + <span style="color: #F0DFAF; font-weight: bold;">_</span> + <span style="color: #F0DFAF; font-weight: bold;">_</span>)
+res185<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Option</span>[<span style="color: #BFEBBF;">Int</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">Some</span>(<span style="color: #BFEBBF;">6</span>)
+
+<span style="color: #F0DFAF; font-weight: bold;">@</span> <span style="color: #BFEBBF;">Semigroupal</span>.map2(<span style="color: #BFEBBF;">Option</span>(<span style="color: #BFEBBF;">1</span>), <span style="color: #BFEBBF;">Option</span>.empty[<span style="color: #BFEBBF;">Int</span>])(<span style="color: #F0DFAF; font-weight: bold;">_</span> + <span style="color: #F0DFAF; font-weight: bold;">_</span>)
+res186<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Option</span>[<span style="color: #BFEBBF;">Int</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">None</span>
+
+</code></pre>
+</div>
+
+</section>
+<section id="slide-org8a5ac5e">
+<h3 id="org8a5ac5e">Apply Syntax</h3>
+<p>
+tuppled
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim><span style="color: #F0DFAF; font-weight: bold;">@</span> <span style="color: #F0DFAF; font-weight: bold;">import</span> cats.instances.option.<span style="color: #F0DFAF; font-weight: bold;">_</span> <span style="color: #5F7F5F;">// </span><span style="color: #7F9F7F;">for Semigroupal</span>
+<span style="color: #F0DFAF; font-weight: bold;">@</span> <span style="color: #F0DFAF; font-weight: bold;">import</span> cats.syntax.apply.<span style="color: #F0DFAF; font-weight: bold;">_</span>
+
+<span style="color: #F0DFAF; font-weight: bold;">@</span> (<span style="color: #BFEBBF;">Option</span>(<span style="color: #BFEBBF;">123</span>), <span style="color: #BFEBBF;">Option</span>(<span style="color: #CC9393;">"abc"</span>)).tupled
+res201<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Option</span>[(<span style="color: #BFEBBF;">Int</span>, <span style="color: #BFEBBF;">String</span>)] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">Some</span>((<span style="color: #BFEBBF;">123</span>, <span style="color: #CC9393;">"abc"</span>))
+
+<span style="color: #F0DFAF; font-weight: bold;">@</span> (<span style="color: #BFEBBF;">Option</span>(<span style="color: #BFEBBF;">123</span>), <span style="color: #BFEBBF;">Option</span>(<span style="color: #CC9393;">"abc"</span>), <span style="color: #BFEBBF;">Option</span>(<span style="color: #BFEBBF;">true</span>)).tupled
+res202<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Option</span>[(<span style="color: #BFEBBF;">Int</span>, <span style="color: #BFEBBF;">String</span>, <span style="color: #BFEBBF;">Boolean</span>)] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">Some</span>((<span style="color: #BFEBBF;">123</span>, <span style="color: #CC9393;">"abc"</span>, <span style="color: #BFEBBF;">true</span>))
+
+</code></pre>
+</div>
+
+</section>
+<section id="slide-org8a5ac5e-split">
+
+<h3>Apply Syntax</h3>
+<p>
+mapN
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim><span style="color: #F0DFAF; font-weight: bold;">@</span> <span style="color: #F0DFAF; font-weight: bold;">case</span> <span style="color: #F0DFAF; font-weight: bold;">class</span> <span style="color: #7CB8BB;">Cat</span>(name<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">String</span>, born<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Int</span>, color<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">String</span>)
+defined <span style="color: #F0DFAF; font-weight: bold;">class</span> <span style="color: #7CB8BB;">Cat</span>
+
+<span style="color: #F0DFAF; font-weight: bold;">@</span> (
+  <span style="color: #BFEBBF;">Option</span>(<span style="color: #CC9393;">"Garfield"</span>),
+  <span style="color: #BFEBBF;">Option</span>(<span style="color: #BFEBBF;">1978</span>),
+  <span style="color: #BFEBBF;">Option</span>(<span style="color: #CC9393;">"Orange &amp; black"</span>)
+  ).mapN(<span style="color: #BFEBBF;">Cat</span>.apply)
+res204<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Option</span>[<span style="color: #BFEBBF;">Cat</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">Some</span>(<span style="color: #BFEBBF;">Cat</span>(<span style="color: #CC9393;">"Garfield"</span>, <span style="color: #BFEBBF;">1978</span>, <span style="color: #CC9393;">"Orange &amp; black"</span>))
+
+</code></pre>
+</div>
+
+</section>
+<section id="slide-org396a303">
+<h3 id="org396a303">Fancy Functors and Apply Syntax</h3>
+<p>
+imapN is used to create an instance of Monoid
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim><span style="color: #F0DFAF; font-weight: bold;">@</span> <span style="color: #F0DFAF; font-weight: bold;">case</span> <span style="color: #F0DFAF; font-weight: bold;">class</span> <span style="color: #7CB8BB;">Cat</span>(name<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">String</span>, yearOfBirth<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Int</span>, favoriteFoods<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">List</span>[<span style="color: #BFEBBF;">String</span>])
+
+<span style="color: #F0DFAF; font-weight: bold;">@</span> <span style="color: #F0DFAF; font-weight: bold;">val</span> <span style="color: #DFAF8F;">tupleToCat</span><span style="color: #F0DFAF; font-weight: bold;">:</span> (<span style="color: #BFEBBF;">String</span>, <span style="color: #BFEBBF;">Int</span>, <span style="color: #BFEBBF;">List</span>[<span style="color: #BFEBBF;">String</span>]) <span style="color: #F0DFAF; font-weight: bold;">=&gt;</span> <span style="color: #BFEBBF;">Cat</span> <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">Cat</span>.apply <span style="color: #F0DFAF; font-weight: bold;">_</span>
+
+<span style="color: #F0DFAF; font-weight: bold;">@</span> <span style="color: #F0DFAF; font-weight: bold;">val</span> <span style="color: #DFAF8F;">catToTuple</span><span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Cat</span> <span style="color: #F0DFAF; font-weight: bold;">=&gt;</span> (<span style="color: #BFEBBF;">String</span>, <span style="color: #BFEBBF;">Int</span>, <span style="color: #BFEBBF;">List</span>[<span style="color: #BFEBBF;">String</span>]) <span style="color: #F0DFAF; font-weight: bold;">=</span>
+  cat <span style="color: #F0DFAF; font-weight: bold;">=&gt;</span> (cat.name, cat.yearOfBirth, cat.favoriteFoods)
+
+<span style="color: #F0DFAF; font-weight: bold;">@</span> <span style="color: #DCDCCC; font-weight: bold;">implicit</span> <span style="color: #F0DFAF; font-weight: bold;">val</span> <span style="color: #DFAF8F;">catMonoid</span><span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Monoid</span>[<span style="color: #BFEBBF;">Cat</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> (
+  <span style="color: #BFEBBF;">Monoid</span>[<span style="color: #BFEBBF;">String</span>],
+  <span style="color: #BFEBBF;">Monoid</span>[<span style="color: #BFEBBF;">Int</span>],
+  <span style="color: #BFEBBF;">Monoid</span>[<span style="color: #BFEBBF;">List</span>[<span style="color: #BFEBBF;">String</span>]]
+  ).imapN(tupleToCat)(catToTuple)
+
+</code></pre>
+</div>
+
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim><span style="color: #F0DFAF; font-weight: bold;">@</span> catMonoid.empty
+res215<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Cat</span> <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">Cat</span>(<span style="color: #CC9393;">""</span>, <span style="color: #BFEBBF;">0</span>, <span style="color: #BFEBBF;">List</span>())
+
+<span style="color: #F0DFAF; font-weight: bold;">@</span> catMonoid.combine(<span style="color: #BFEBBF;">Cat</span>(<span style="color: #CC9393;">"Smudge"</span>, <span style="color: #BFEBBF;">2</span>, <span style="color: #BFEBBF;">List</span>(<span style="color: #CC9393;">"fish"</span>)), <span style="color: #BFEBBF;">Cat</span>(<span style="color: #CC9393;">"Molly"</span>, <span style="color: #BFEBBF;">3</span>, <span style="color: #BFEBBF;">List</span>(<span style="color: #CC9393;">"meat"</span>)))
+res239<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Cat</span> <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">Cat</span>(<span style="color: #CC9393;">"SmudgeMolly"</span>, <span style="color: #BFEBBF;">5</span>, <span style="color: #BFEBBF;">List</span>(<span style="color: #CC9393;">"fish"</span>, <span style="color: #CC9393;">"meat"</span>))
+</code></pre>
+</div>
+
+<p class="fragment roll-in">
+Similar to a "normal" imap, where the first function (map) converts output of
+empty and combine methods and the second one (contramap) deals with inputs of combine.
+</p>
+<div class="org-src-container">
+
+<pre  class="fragment roll-in"><code trim><span style="color: #F0DFAF; font-weight: bold;">@</span> <span style="color: #BFEBBF;">Monoid</span>[<span style="color: #BFEBBF;">Int</span>].imap(<span style="color: #F0DFAF; font-weight: bold;">_</span>.toString)(<span style="color: #F0DFAF; font-weight: bold;">_</span>.toInt)
+res237<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Monoid</span>[<span style="color: #BFEBBF;">String</span>] <span style="color: #F0DFAF; font-weight: bold;">=</span> cats.instances.<span style="color: #BFEBBF;">InvariantMonoidalInstances</span>$$anon$3$$anon$5<span style="color: #F0DFAF; font-weight: bold;">@</span><span style="color: #BFEBBF;">587d</span>fa33
+</code></pre>
+</div>
+
+</section>
+<section id="slide-org396a303-split">
+
+<h3>Fancy Functors and Apply Syntax</h3>
+<div class="org-src-container">
+
+<pre  class="src src-scala"><code trim><span style="color: #F0DFAF; font-weight: bold;">@</span> <span style="color: #F0DFAF; font-weight: bold;">import</span> cats.syntax.semigroup.<span style="color: #F0DFAF; font-weight: bold;">_</span> <span style="color: #5F7F5F;">// </span><span style="color: #7F9F7F;">for |+|</span>
+<span style="color: #F0DFAF; font-weight: bold;">import</span> cats.syntax.semigroup.<span style="color: #F0DFAF; font-weight: bold;">_</span> <span style="color: #5F7F5F;">// </span><span style="color: #7F9F7F;">for |+|</span>
+
+<span style="color: #F0DFAF; font-weight: bold;">@</span> <span style="color: #F0DFAF; font-weight: bold;">val</span> <span style="color: #DFAF8F;">garfield</span> <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">Cat</span>(<span style="color: #CC9393;">"Garfield"</span>, <span style="color: #BFEBBF;">1978</span>, <span style="color: #BFEBBF;">List</span>(<span style="color: #CC9393;">"Lasagne"</span>))
+garfield<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Cat</span> <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">Cat</span>(<span style="color: #CC9393;">"Garfield"</span>, <span style="color: #BFEBBF;">1978</span>, <span style="color: #BFEBBF;">List</span>(<span style="color: #CC9393;">"Lasagne"</span>))
+
+<span style="color: #F0DFAF; font-weight: bold;">@</span> <span style="color: #F0DFAF; font-weight: bold;">val</span> <span style="color: #DFAF8F;">heathcliff</span> <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">Cat</span>(<span style="color: #CC9393;">"Heathcliff"</span>, <span style="color: #BFEBBF;">1988</span>, <span style="color: #BFEBBF;">List</span>(<span style="color: #CC9393;">"Junk Food"</span>))
+heathcliff<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Cat</span> <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">Cat</span>(<span style="color: #CC9393;">"Heathcliff"</span>, <span style="color: #BFEBBF;">1988</span>, <span style="color: #BFEBBF;">List</span>(<span style="color: #CC9393;">"Junk Food"</span>))
+
+<span style="color: #F0DFAF; font-weight: bold;">@</span> garfield |+| heathcliff
+res245<span style="color: #F0DFAF; font-weight: bold;">:</span> <span style="color: #7CB8BB;">Cat</span> <span style="color: #F0DFAF; font-weight: bold;">=</span> <span style="color: #BFEBBF;">Cat</span>(<span style="color: #CC9393;">"GarfieldHeathcliff"</span>, <span style="color: #BFEBBF;">3966</span>, <span style="color: #BFEBBF;">List</span>(<span style="color: #CC9393;">"Lasagne"</span>, <span style="color: #CC9393;">"Junk Food"</span>))
+</code></pre>
+</div>
+
+</section>
+<section id="slide-org557b7c5">
+<h3 id="org557b7c5">Semigroupal Applied to Different Types</h3>
+</section>
+</section>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js/js/reveal.js"></script>
+
+<script>
+// Full list of configuration options available here:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+slideNumber:"c/t", width:1400, height:1000,
+multiplex: {
+    secret: '', // null if client
+    id: '', // id, obtained from socket.io server
+    url: '' // Location of socket.io server
+},
+
+// Optional libraries used to extend on reveal.js
+dependencies: [
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }]
+});
+</script>
+</body>
+</html>

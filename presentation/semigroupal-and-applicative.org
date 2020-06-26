@@ -49,8 +49,9 @@ context.
 
 
 #+ATTR_REVEAL: :frag roll-in
-Cats formulates Applicative in terms of semigroupal formulation.
+Cats defines Applicative in terms of semigroupal formulation.
 
+#+ATTR_REVEAL: :frag roll-in
 Haskell and Scalaz - in terms of function application.
 
 * Semigroupal
@@ -179,3 +180,20 @@ empty and combine methods and the second one (contramap) deals with inputs of co
 @ Monoid[Int].imap(_.toString)(_.toInt)
 res237: Monoid[String] = cats.instances.InvariantMonoidalInstances$$anon$3$$anon$5@587dfa33
 #+end_src
+
+#+REVEAL: split:t
+#+begin_src scala
+@ import cats.syntax.semigroup._ // for |+|
+import cats.syntax.semigroup._ // for |+|
+
+@ val garfield = Cat("Garfield", 1978, List("Lasagne"))
+garfield: Cat = Cat("Garfield", 1978, List("Lasagne"))
+
+@ val heathcliff = Cat("Heathcliff", 1988, List("Junk Food"))
+heathcliff: Cat = Cat("Heathcliff", 1988, List("Junk Food"))
+
+@ garfield |+| heathcliff
+res245: Cat = Cat("GarfieldHeathcliff", 3966, List("Lasagne", "Junk Food"))
+#+end_src
+
+** Semigroupal Applied to Different Types
